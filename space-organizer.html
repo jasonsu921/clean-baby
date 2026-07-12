@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>空間整理師 · Spatial Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --stone: #EBE8E1;
+    --stone-deep: #DEDACF;
+    --ink: #23241F;
+    --ink-soft: #5B5A52;
+    --indigo: #3A4A63;
+    --indigo-deep: #2A3648;
+    --mustard: #C98B2E;
+    --sage: #6B8F71;
+    --brick: #A85138;
+    --paper: #F8F7F3;
+    --line: rgba(35,36,31,0.14);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--stone);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:48px 28px 80px;
+  }
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    border-bottom:1px solid var(--line);
+    padding-bottom:22px;
+    margin-bottom:36px;
+    gap:20px;
+    flex-wrap:wrap;
+  }
+  .masthead .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--indigo);
+    margin:0 0 8px;
+  }
+  .masthead h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:clamp(32px,4.4vw,50px);
+    margin:0;
+    line-height:1.02;
+    letter-spacing:-.01em;
+  }
+  .masthead p{
+    max-width:360px;
+    margin:0;
+    font-size:14.5px;
+    color:var(--ink-soft);
+    line-height:1.55;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:340px 1fr;
+    gap:28px;
+    align-items:start;
+  }
+  @media (max-width:860px){
+    .grid{grid-template-columns:1fr;}
+  }
+
+  .panel{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:2px;
+  }
+
+  /* ---- left: input panel ---- */
+  .input-panel{
+    position:sticky;
+    top:24px;
+    padding:26px 24px 28px;
+  }
+  .field-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    display:block;
+    margin-bottom:10px;
+  }
+  .dropzone{
+    border:1.5px dashed var(--line);
+    border-radius:2px;
+    padding:22px 16px;
+    text-align:center;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+    margin-bottom:22px;
+    background:var(--stone);
+  }
+  .dropzone:hover, .dropzone.drag{
+    border-color:var(--indigo);
+    background:var(--stone-deep);
+  }
+  .dropzone svg{display:block;margin:0 auto 10px;opacity:.55;}
+  .dropzone .dz-text{font-size:13.5px;color:var(--ink-soft);}
+  .dropzone .dz-text b{color:var(--ink);font-weight:600;}
+  #fileInput{display:none;}
+  .preview-wrap{
+    margin-bottom:22px;
+    display:none;
+  }
+  .preview-wrap img{
+    width:100%;
+    display:block;
+    border-radius:2px;
+    border:1px solid var(--line);
+  }
+  .preview-wrap .swap{
+    margin-top:8px;
+    font-size:12px;
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--indigo);
+    cursor:pointer;
+    text-decoration:underline;
+    text-underline-offset:2px;
+  }
+  textarea{
+    width:100%;
+    min-height:104px;
+    resize:vertical;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    line-height:1.5;
+    padding:12px 13px;
+    border:1px solid var(--line);
+    border-radius:2px;
+    background:var(--stone);
+    color:var(--ink);
+    margin-bottom:22px;
+  }
+  textarea:focus{outline:2px solid var(--indigo);outline-offset:1px;}
+  textarea::placeholder{color:#9C9A8F;}
+
+  .go-btn{
+    width:100%;
+    padding:13px 16px;
+    background:var(--indigo);
+    color:var(--paper);
+    border:none;
+    border-radius:2px;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:14.5px;
+    cursor:pointer;
+    transition:background .15s ease;
+    letter-spacing:.01em;
+  }
+  .go-btn:hover:not(:disabled){background:var(--indigo-deep);}
+  .go-btn:disabled{opacity:.45;cursor:not-allowed;}
+  .go-btn:focus-visible{outline:2px solid var(--mustard);outline-offset:2px;}
+
+  .err-msg{
+    margin-top:12px;
+    font-size:13px;
+    color:var(--brick);
+    display:none;
+  }
+
+  .divider{
+    height:1px;
+    background:var(--line);
+    margin:26px 0 22px;
+  }
+  .field-hint{
+    font-size:12px;
+    color:var(--ink-soft);
+    line-height:1.55;
+    margin:0 0 12px;
+  }
+  .field-hint a{color:var(--indigo);}
+  .key-input{
+    width:100%;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    padding:11px 13px;
+    border:1px solid var(--line);
+    border-radius:2px;
+    background:var(--stone);
+    color:var(--ink);
+    margin-bottom:16px;
+  }
+  .key-input:focus{outline:2px solid var(--indigo);outline-offset:1px;}
+  .photo-btn{
+    background:var(--brick);
+  }
+  .photo-btn:hover:not(:disabled){background:#8C4530;}
+
+  .photo-loading{
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    padding:60px 0;
+  }
+  .photo-loading.active{display:flex;}
+
+  .photo-result{
+    display:none;
+    margin-bottom:34px;
+    padding-bottom:30px;
+    border-bottom:1px solid var(--line);
+  }
+  .photo-result.active{display:block;}
+  .photo-compare{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-bottom:14px;
+  }
+  .photo-compare figure{margin:0;}
+  .photo-compare img{
+    width:100%;
+    display:block;
+    border-radius:2px;
+    border:1px solid var(--line);
+  }
+  .photo-compare figcaption{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-top:6px;
+  }
+  @media (max-width:560px){
+    .photo-compare{grid-template-columns:1fr;}
+  }
+  .download-link{
+    display:inline-block;
+    padding:9px 16px;
+    background:var(--indigo);
+    color:var(--paper);
+    text-decoration:none;
+    border-radius:2px;
+    font-size:13px;
+    font-weight:600;
+  }
+  .download-link:hover{background:var(--indigo-deep);}
+
+  /* ---- right: result panel ---- */
+  .result-panel{
+    padding:26px 26px 30px;
+    min-height:420px;
+  }
+  .result-empty{
+    height:420px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    color:var(--ink-soft);
+    gap:10px;
+  }
+  .result-empty .glyph{
+    font-family:'Fraunces',serif;
+    font-size:44px;
+    color:var(--stone-deep);
+    line-height:1;
+  }
+  .result-empty p{max-width:280px;font-size:13.5px;line-height:1.55;margin:0;}
+
+  .loading{
+    height:420px;
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+  }
+  .loading.active{display:flex;}
+  .spinner{
+    width:30px;height:30px;
+    border:2.5px solid var(--line);
+    border-top-color:var(--indigo);
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading .lmsg{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);letter-spacing:.04em;}
+
+  .result-body{display:none;}
+  .result-body.active{display:block;}
+
+  .annot-wrap{
+    position:relative;
+    border-radius:2px;
+    overflow:hidden;
+    border:1px solid var(--line);
+    background:var(--ink);
+    margin-bottom:8px;
+  }
+  .annot-wrap img{
+    width:100%;
+    display:block;
+  }
+  .pin{
+    position:absolute;
+    width:24px;height:24px;
+    transform:translate(-50%,-50%);
+    background:var(--mustard);
+    color:var(--ink);
+    border-radius:50%;
+    border:2px solid var(--paper);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:11.5px;
+    cursor:pointer;
+    box-shadow:0 2px 6px rgba(0,0,0,.35);
+    transition:transform .12s ease, background .12s ease;
+  }
+  .pin:hover, .pin.active-pin{
+    transform:translate(-50%,-50%) scale(1.18);
+    background:var(--brick);
+    color:var(--paper);
+  }
+  .annot-caption{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    letter-spacing:.03em;
+    margin:0 0 26px;
+  }
+
+  .summary-block{
+    font-family:'Fraunces',serif;
+    font-size:19px;
+    line-height:1.5;
+    font-weight:500;
+    color:var(--ink);
+    padding-bottom:22px;
+    margin-bottom:24px;
+    border-bottom:1px solid var(--line);
+  }
+
+  .section-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--indigo);
+    margin:0 0 14px;
+  }
+
+  .item-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:32px;
+  }
+  .item-card{
+    display:grid;
+    grid-template-columns:26px 1fr;
+    gap:12px;
+    padding:13px 14px;
+    background:var(--stone);
+    border:1px solid var(--line);
+    border-radius:2px;
+    transition:border-color .12s ease, background .12s ease;
+  }
+  .item-card.active-card{
+    border-color:var(--indigo);
+    background:var(--stone-deep);
+  }
+  .item-num{
+    width:24px;height:24px;
+    border-radius:50%;
+    background:var(--mustard);
+    color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:11.5px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .item-title-row{
+    display:flex;
+    align-items:baseline;
+    gap:9px;
+    flex-wrap:wrap;
+    margin-bottom:3px;
+  }
+  .item-title{font-weight:600;font-size:14.5px;}
+  .tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    padding:2px 7px;
+    border-radius:20px;
+    color:var(--paper);
+  }
+  .tag.keep{background:var(--sage);}
+  .tag.relocate{background:var(--indigo);}
+  .tag.discard{background:var(--brick);}
+  .tag.clean{background:var(--mustard);color:var(--ink);}
+  .item-detail{font-size:13.5px;color:var(--ink-soft);line-height:1.5;margin:0;}
+
+  .steps-list{
+    list-style:none;
+    margin:0;padding:0;
+    counter-reset:step;
+    display:flex;
+    flex-direction:column;
+    gap:0;
+  }
+  .steps-list li{
+    counter-increment:step;
+    display:grid;
+    grid-template-columns:30px 1fr;
+    gap:12px;
+    padding:13px 0;
+    border-bottom:1px solid var(--line);
+    font-size:14px;
+    line-height:1.5;
+  }
+  .steps-list li:last-child{border-bottom:none;}
+  .steps-list li::before{
+    content:counter(step);
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:17px;
+    color:var(--indigo);
+  }
+
+  .prompt-hint{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    line-height:1.5;
+    margin:0 0 12px;
+  }
+  .prompt-box{
+    position:relative;
+    background:var(--indigo-deep);
+    border-radius:2px;
+    padding:18px 90px 18px 18px;
+  }
+  .prompt-box pre{
+    margin:0;
+    color:var(--paper);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    line-height:1.65;
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+  .copy-btn{
+    position:absolute;
+    top:14px;
+    right:14px;
+    padding:7px 12px;
+    background:var(--mustard);
+    color:var(--ink);
+    border:none;
+    border-radius:2px;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:12px;
+    cursor:pointer;
+    transition:background .12s ease;
+    white-space:nowrap;
+  }
+  .copy-btn:hover{background:#DDA13F;}
+  .copy-btn.copied{background:var(--sage);color:var(--paper);}
+
+  ::selection{background:var(--mustard);color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div>
+      <p class="eyebrow">Spatial Plan · 空間整理師</p>
+      <h1>把亂丟的空間,<br>交給有想法的眼睛。</h1>
+    </div>
+    <p>上傳一張空間照片,寫下你的整理需求,AI 會在照片上標出重點、排出整理計畫,並生成一段可貼到圖片生成工具的提示詞。</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- LEFT: input -->
+    <div class="panel input-panel">
+      <span class="field-label">01 · 空間照片</span>
+      <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="上傳照片">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        <div class="dz-text"><b>點擊上傳</b>或拖曳照片到這裡</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/*">
+      <div class="preview-wrap" id="previewWrap">
+        <img id="previewImg" alt="已上傳的空間照片預覽">
+        <div class="swap" id="swapBtn">更換照片</div>
+      </div>
+
+      <span class="field-label">02 · 整理需求</span>
+      <textarea id="reqInput" placeholder="例如:想要極簡風格、書籍要集中收納、有小孩要注意收納高度⋯⋯"></textarea>
+
+      <button class="go-btn" id="goBtn" disabled>生成整理計畫</button>
+      <div class="err-msg" id="errMsg"></div>
+
+      <div class="divider"></div>
+
+      <span class="field-label">03 · Gemini API Key(選填)</span>
+      <p class="field-hint">貼上你自己的 Gemini API Key,可直接生成整理後的照片。Key 只存在這次瀏覽器記憶體裡,重新整理頁面就會消失,不會被儲存或送到我以外的地方。沒有 Key 可以到 <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> 免費申請。</p>
+      <input type="password" id="geminiKeyInput" class="key-input" placeholder="貼上 Gemini API Key" autocomplete="off">
+
+      <button class="go-btn photo-btn" id="photoBtn" disabled>直接生成整理後照片</button>
+      <div class="err-msg" id="photoErrMsg"></div>
+    </div>
+
+    <!-- RIGHT: result -->
+    <div class="panel result-panel">
+      <div class="photo-loading" id="photoLoading">
+        <div class="spinner"></div>
+        <p class="lmsg" id="photoLoadingMsg">傳送給 Gemini 生成中⋯⋯這通常需要 10-30 秒</p>
+      </div>
+      <div class="photo-result" id="photoResult">
+        <p class="section-label">整理後照片</p>
+        <div class="photo-compare" id="photoCompare"></div>
+        <a class="download-link" id="downloadLink" download="tidied-room.png">下載圖片</a>
+      </div>
+
+      <div class="result-empty" id="emptyState">
+        <div class="glyph">*</div>
+        <p>上傳照片並填寫需求後,整理計畫會顯示在這裡 —— 附帶照片上的標註重點。</p>
+      </div>
+
+      <div class="loading" id="loadingState">
+        <div class="spinner"></div>
+        <p class="lmsg" id="loadingMsg">分析空間中⋯⋯</p>
+      </div>
+
+      <div class="result-body" id="resultBody">
+        <div class="annot-wrap" id="annotWrap">
+          <img id="resultImg" alt="標註後的空間照片">
+        </div>
+        <p class="annot-caption">點擊照片上的標記,對照下方整理項目</p>
+
+        <div class="summary-block" id="summaryBlock"></div>
+
+        <p class="section-label">整理重點</p>
+        <div class="item-list" id="itemList"></div>
+
+        <p class="section-label">建議步驟</p>
+        <ol class="steps-list" id="stepsList"></ol>
+
+        <p class="section-label">圖片生成提示詞 · 給 Midjourney / ChatGPT / Gemini 用</p>
+        <p class="prompt-hint">請把「原始照片」和這段提示詞放在同一則訊息一起送出(例如 ChatGPT / Gemini),讓 AI 判斷成「編輯這張照片」而不是「重新生成新房間」。Midjourney 請搭配 /describe 或圖片網址使用。</p>
+        <div class="prompt-box">
+          <pre id="promptText"></pre>
+          <button class="copy-btn" id="copyBtn">複製提示詞</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let uploadedBase64 = null;
+let uploadedMediaType = null;
+
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const previewWrap = document.getElementById('previewWrap');
+const previewImg = document.getElementById('previewImg');
+const swapBtn = document.getElementById('swapBtn');
+const reqInput = document.getElementById('reqInput');
+const goBtn = document.getElementById('goBtn');
+const errMsg = document.getElementById('errMsg');
+
+const emptyState = document.getElementById('emptyState');
+const loadingState = document.getElementById('loadingState');
+const loadingMsg = document.getElementById('loadingMsg');
+const resultBody = document.getElementById('resultBody');
+const annotWrap = document.getElementById('annotWrap');
+const resultImg = document.getElementById('resultImg');
+const summaryBlock = document.getElementById('summaryBlock');
+const itemList = document.getElementById('itemList');
+const stepsList = document.getElementById('stepsList');
+const promptText = document.getElementById('promptText');
+const copyBtn = document.getElementById('copyBtn');
+
+const geminiKeyInput = document.getElementById('geminiKeyInput');
+const photoBtn = document.getElementById('photoBtn');
+const photoErrMsg = document.getElementById('photoErrMsg');
+const photoLoading = document.getElementById('photoLoading');
+const photoLoadingMsg = document.getElementById('photoLoadingMsg');
+const photoResult = document.getElementById('photoResult');
+const photoCompare = document.getElementById('photoCompare');
+const downloadLink = document.getElementById('downloadLink');
+
+dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') fileInput.click(); });
+swapBtn.addEventListener('click', () => fileInput.click());
+
+['dragover','dragenter'].forEach(ev => dropzone.addEventListener(ev, e => {
+  e.preventDefault(); dropzone.classList.add('drag');
+}));
+['dragleave','drop'].forEach(ev => dropzone.addEventListener(ev, e => {
+  e.preventDefault(); dropzone.classList.remove('drag');
+}));
+dropzone.addEventListener('drop', e => {
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile(f);
+});
+fileInput.addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (f) handleFile(f);
+});
+
+function handleFile(file){
+  if (!file.type.startsWith('image/')) return;
+  uploadedMediaType = file.type;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const result = reader.result;
+    uploadedBase64 = result.split(',')[1];
+    previewImg.src = result;
+    previewWrap.style.display = 'block';
+    dropzone.style.display = 'none';
+    updateGoState();
+  };
+  reader.readAsDataURL(file);
+}
+
+reqInput.addEventListener('input', updateGoState);
+geminiKeyInput.addEventListener('input', updateGoState);
+function updateGoState(){
+  const hasBasics = uploadedBase64 && reqInput.value.trim().length > 0;
+  goBtn.disabled = !hasBasics;
+  photoBtn.disabled = !(hasBasics && geminiKeyInput.value.trim().length > 0);
+}
+
+const loadingMessages = ['分析空間中⋯⋯','辨識物件與區域⋯⋯','排列整理順序⋯⋯','標註重點位置⋯⋯'];
+
+goBtn.addEventListener('click', runAnalysis);
+
+async function runAnalysis(){
+  errMsg.style.display = 'none';
+  emptyState.style.display = 'none';
+  resultBody.classList.remove('active');
+  loadingState.classList.add('active');
+  goBtn.disabled = true;
+
+  let msgIdx = 0;
+  loadingMsg.textContent = loadingMessages[0];
+  const msgTimer = setInterval(() => {
+    msgIdx = (msgIdx + 1) % loadingMessages.length;
+    loadingMsg.textContent = loadingMessages[msgIdx];
+  }, 1600);
+
+  const systemPrompt = `你是專業的空間整理顧問。使用者會提供一張空間照片與整理需求。
+請仔細觀察照片中的實際物件與區域,並嚴格只回傳一個 JSON 物件,不要有任何前言、說明文字或 markdown 符號,格式如下:
+{
+  "summary": "一句話描述這個空間目前的狀況與整理方向,呼應使用者需求,20-40字",
+  "items": [
+    {"title":"重點名稱(6-10字)","category":"keep|relocate|discard|clean","detail":"具體建議,15-30字","x":數字0-100,"y":數字0-100}
+  ],
+  "steps": ["步驟一","步驟二","..."],
+  "imagePrompt": "一段英文 prompt,給 Midjourney/ChatGPT/Gemini 等圖片生成工具使用,80-130字"
+}
+規則:
+- items 需要 4 到 7 個,x/y 是該重點在照片中的大略位置(百分比,左上為0,0),必須根據照片實際內容估計,不可全部集中在同一點
+- category 只能是 keep(保留定位)、relocate(移位收納)、discard(清除)、clean(清潔整理)其中之一
+- steps 需要 4 到 6 個,依實際執行順序排列,每個步驟15-25字
+- imagePrompt 必須用英文撰寫,結構固定如下,不可省略任何一段:
+  1. 第一句必須是強制指令,原文照抄不可更動語意:"Edit the uploaded photo directly. Do not generate a new room. Keep the exact same camera angle, room layout, walls, windows, doors, ceiling height, and all furniture positions unchanged."
+  2. 第二段描述照片中觀察到的實際空間細節(房間類型、主要家具與其相對位置、光線來源、視角),必須根據照片實際內容,不可憑空想像
+  3. 第三段融入使用者的整理需求與風格偏好,只描述「物品整齊度、收納方式、表面乾淨度」的改變,不可提及更動格局、牆面、窗戶、家具擺放位置
+  4. 最後一句必須重申一次:"Only tidy and organize the visible items — the room structure and camera angle must remain identical to the original photo."
+  5. 可在描述中加入攝影風格關鍵字(如 photorealistic, interior photography, natural lighting)以提升生成品質,但不可放在第一句或最後一句
+  總長度 100-160 字
+- 只回傳 JSON,不要加 \`\`\`json 或任何其他文字`;
+
+  try{
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "image", source: { type: "base64", media_type: uploadedMediaType, data: uploadedBase64 } },
+              { type: "text", text: `整理需求:${reqInput.value.trim()}` }
+            ]
+          }
+        ]
+      })
+    });
+
+    if (!response.ok) throw new Error('API 請求失敗 (' + response.status + ')');
+    const data = await response.json();
+    const rawText = (data.content || []).map(b => b.text || '').join('').trim();
+    const cleaned = rawText.replace(/^```json\s*|^```\s*|```$/g, '').trim();
+    const plan = JSON.parse(cleaned);
+
+    renderResult(plan);
+  }catch(err){
+    console.error(err);
+    errMsg.textContent = '生成失敗,請稍後再試一次。(' + err.message + ')';
+    errMsg.style.display = 'block';
+    emptyState.style.display = 'flex';
+  }finally{
+    clearInterval(msgTimer);
+    loadingState.classList.remove('active');
+    goBtn.disabled = false;
+  }
+}
+
+const categoryLabel = { keep:'保留定位', relocate:'移位收納', discard:'清除', clean:'清潔整理' };
+
+function renderResult(plan){
+  resultImg.src = previewImg.src;
+
+  summaryBlock.textContent = plan.summary || '';
+
+  itemList.innerHTML = '';
+  annotWrap.querySelectorAll('.pin').forEach(p => p.remove());
+
+  (plan.items || []).forEach((item, i) => {
+    const num = i + 1;
+
+    const pin = document.createElement('div');
+    pin.className = 'pin';
+    pin.style.left = Math.max(3, Math.min(97, item.x)) + '%';
+    pin.style.top = Math.max(3, Math.min(97, item.y)) + '%';
+    pin.textContent = num;
+    pin.dataset.idx = num;
+    annotWrap.appendChild(pin);
+
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.dataset.idx = num;
+    const cat = item.category || 'keep';
+    card.innerHTML = `
+      <div class="item-num">${num}</div>
+      <div>
+        <div class="item-title-row">
+          <span class="item-title">${escapeHtml(item.title || '')}</span>
+          <span class="tag ${cat}">${categoryLabel[cat] || cat}</span>
+        </div>
+        <p class="item-detail">${escapeHtml(item.detail || '')}</p>
+      </div>
+    `;
+    itemList.appendChild(card);
+
+    const highlight = () => {
+      annotWrap.querySelectorAll('.pin').forEach(p => p.classList.remove('active-pin'));
+      itemList.querySelectorAll('.item-card').forEach(c => c.classList.remove('active-card'));
+      pin.classList.add('active-pin');
+      card.classList.add('active-card');
+    };
+    pin.addEventListener('click', highlight);
+    card.addEventListener('click', () => {
+      highlight();
+      card.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    });
+  });
+
+  stepsList.innerHTML = '';
+  (plan.steps || []).forEach(step => {
+    const li = document.createElement('li');
+    li.textContent = step;
+    stepsList.appendChild(li);
+  });
+
+  promptText.textContent = plan.imagePrompt || '';
+  copyBtn.textContent = '複製提示詞';
+  copyBtn.classList.remove('copied');
+
+  resultBody.classList.add('active');
+}
+
+copyBtn.addEventListener('click', async () => {
+  try{
+    await navigator.clipboard.writeText(promptText.textContent);
+    copyBtn.textContent = '已複製';
+    copyBtn.classList.add('copied');
+    setTimeout(() => {
+      copyBtn.textContent = '複製提示詞';
+      copyBtn.classList.remove('copied');
+    }, 1800);
+  }catch(err){
+    copyBtn.textContent = '複製失敗,請手動選取';
+  }
+});
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+photoBtn.addEventListener('click', runPhotoGeneration);
+
+const photoLoadingMessages = ['傳送給 Gemini 生成中⋯⋯','分析原始照片⋯⋯','依需求整理物件中⋯⋯','繪製整理後版本⋯⋯'];
+
+async function runPhotoGeneration(){
+  photoErrMsg.style.display = 'none';
+  photoResult.classList.remove('active');
+  photoLoading.classList.add('active');
+  photoBtn.disabled = true;
+
+  let msgIdx = 0;
+  photoLoadingMsg.textContent = photoLoadingMessages[0];
+  const msgTimer = setInterval(() => {
+    msgIdx = (msgIdx + 1) % photoLoadingMessages.length;
+    photoLoadingMsg.textContent = photoLoadingMessages[msgIdx];
+  }, 2200);
+
+  const wrappedPrompt = `Edit the uploaded photo directly. Do not generate a new room. Keep the exact same camera angle, room layout, walls, windows, doors, ceiling height, and all furniture positions unchanged. Only tidy and organize the visible items according to this request: ${reqInput.value.trim()}. Make the space look clean, decluttered and well-organized, photorealistic, natural lighting. Only tidy and organize the visible items — the room structure and camera angle must remain identical to the original photo.`;
+
+  const model = 'gemini-2.5-flash-image';
+  const apiKey = geminiKeyInput.value.trim();
+
+  try{
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey
+      },
+      body: JSON.stringify({
+        contents: [{
+          role: 'user',
+          parts: [
+            { inlineData: { mimeType: uploadedMediaType, data: uploadedBase64 } },
+            { text: wrappedPrompt }
+          ]
+        }],
+        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
+      })
+    });
+
+    if (!response.ok){
+      const errBody = await response.text();
+      throw new Error('Gemini API 錯誤 (' + response.status + ')：' + errBody.slice(0, 200));
+    }
+
+    const data = await response.json();
+    const parts = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || [];
+    const imgPart = parts.find(p => p.inlineData && p.inlineData.data);
+
+    if (!imgPart){
+      const textPart = parts.find(p => p.text);
+      throw new Error(textPart ? ('Gemini 沒有回傳圖片:' + textPart.text.slice(0, 150)) : 'Gemini 沒有回傳圖片,可能是安全過濾擋下了這次請求');
+    }
+
+    const mime = imgPart.inlineData.mimeType || 'image/png';
+    const dataUrl = `data:${mime};base64,${imgPart.inlineData.data}`;
+
+    photoCompare.innerHTML = `
+      <figure>
+        <img src="${previewImg.src}" alt="原始照片">
+        <figcaption>原始照片</figcaption>
+      </figure>
+      <figure>
+        <img src="${dataUrl}" alt="整理後照片">
+        <figcaption>整理後照片</figcaption>
+      </figure>
+    `;
+    downloadLink.href = dataUrl;
+    photoResult.classList.add('active');
+  }catch(err){
+    console.error(err);
+    photoErrMsg.textContent = err.message;
+    photoErrMsg.style.display = 'block';
+  }finally{
+    clearInterval(msgTimer);
+    photoLoading.classList.remove('active');
+    photoBtn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
