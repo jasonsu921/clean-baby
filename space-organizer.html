@@ -504,7 +504,6 @@
 
   <div class="grid">
 
-    <!-- LEFT: input -->
     <div class="panel input-panel">
       <span class="field-label">01 · 空間照片</span>
       <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="上傳照片">
@@ -533,7 +532,6 @@
       <div class="err-msg" id="photoErrMsg"></div>
     </div>
 
-    <!-- RIGHT: result -->
     <div class="panel result-panel">
       <div class="photo-loading" id="photoLoading">
         <div class="spinner"></div>
@@ -840,7 +838,8 @@ async function runPhotoGeneration(){
 
   const wrappedPrompt = `Edit the uploaded photo directly. Do not generate a new room. Keep the exact same camera angle, room layout, walls, windows, doors, ceiling height, and all furniture positions unchanged. Only tidy and organize the visible items according to this request: ${reqInput.value.trim()}. Make the space look clean, decluttered and well-organized, photorealistic, natural lighting. Only tidy and organize the visible items — the room structure and camera angle must remain identical to the original photo.`;
 
-  const model = 'gemini-2.5-flash-image';
+  // 修改重點：換成官方最新支援影像生成與多模態應用的 gemini-3.1-flash-image
+  const model = 'gemini-3.1-flash-image';
   const apiKey = geminiKeyInput.value.trim();
 
   try{
