@@ -166,13 +166,15 @@
     cursor:pointer;
     transition:background .15s ease;
     letter-spacing:.01em;
+    margin-bottom:12px;
   }
   .go-btn:hover:not(:disabled){background:var(--indigo-deep);}
   .go-btn:disabled{opacity:.45;cursor:not-allowed;}
   .go-btn:focus-visible{outline:2px solid var(--mustard);outline-offset:2px;}
 
   .err-msg{
-    margin-top:12px;
+    margin-top:4px;
+    margin-bottom:16px;
     font-size:13px;
     color:var(--brick);
     display:none;
@@ -204,6 +206,7 @@
   .key-input:focus{outline:2px solid var(--indigo);outline-offset:1px;}
   .photo-btn{
     background:var(--brick);
+    margin-bottom:0;
   }
   .photo-btn:hover:not(:disabled){background:#8C4530;}
 
@@ -519,14 +522,12 @@
       <span class="field-label">02 · 整理需求</span>
       <textarea id="reqInput" placeholder="例如:想要極簡風格、書籍要集中收納、有小孩要注意收納高度⋯⋯"></textarea>
 
+      <span class="field-label">03 · Gemini API Key(必填)</span>
+      <p class="field-hint">請貼上你的 Gemini API Key 以啟用完整 AI 空間功能。Key 只存在瀏覽器記憶體中,重新整理即消失。可至 <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> 免費申請。</p>
+      <input type="password" id="geminiKeyInput" class="key-input" placeholder="貼上 Gemini API Key" autocomplete="off">
+
       <button class="go-btn" id="goBtn" disabled>生成整理計畫</button>
       <div class="err-msg" id="errMsg"></div>
-
-      <div class="divider"></div>
-
-      <span class="field-label">03 · Gemini API Key(選填)</span>
-      <p class="field-hint">貼上你自己的 Gemini API Key,可直接生成整理後的照片。Key 只存在這次瀏覽器記憶體裡,重新整理頁面就會消失,不會被儲存或送到我以外的地方。沒有 Key 可以到 <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> 免費申請。</p>
-      <input type="password" id="geminiKeyInput" class="key-input" placeholder="貼上 Gemini API Key" autocomplete="off">
 
       <button class="go-btn photo-btn" id="photoBtn" disabled>直接生成整理後照片</button>
       <div class="err-msg" id="photoErrMsg"></div>
@@ -545,7 +546,7 @@
 
       <div class="result-empty" id="emptyState">
         <div class="glyph">*</div>
-        <p>上傳照片並填寫需求後,整理計畫會顯示在這裡 —— 附帶照片上的標註重點。</p>
+        <p>上傳照片、填寫需求並輸入 API Key 後,整理計畫會顯示在這裡 —— 附帶照片上的標註重點。</p>
       </div>
 
       <div class="loading" id="loadingState">
@@ -565,7 +566,7 @@
         <div class="item-list" id="itemList"></div>
 
         <p class="section-label">建議步驟</p>
-        <ol class="steps-list" id="stepsList"></ol>
+        <div class="item-list"><ol class="steps-list" id="stepsList"></ol></div>
 
         <p class="section-label">圖片生成提示詞 · 給 Midjourney / ChatGPT / Gemini 用</p>
         <p class="prompt-hint">請把「原始照片」和這段提示詞放在同一則訊息一起送出(例如 ChatGPT / Gemini),讓 AI 判斷成「編輯這張照片」而不是「重新生成新房間」。Midjourney 請搭配 /describe 或圖片網址使用。</p>
@@ -650,12 +651,12 @@ function handleFile(file){
 reqInput.addEventListener('input', updateGoState);
 geminiKeyInput.addEventListener('input', updateGoState);
 function updateGoState(){
-  const hasBasics = uploadedBase64 && reqInput.value.trim().length > 0;
+  const hasBasics = uploadedBase64 && reqInput.value.trim().length > 0 && geminiKeyInput.value.trim().length > 0;
   goBtn.disabled = !hasBasics;
-  photoBtn.disabled = !(hasBasics && geminiKeyInput.value.trim().length > 0);
+  photoBtn.disabled = !hasBasics;
 }
 
-const loadingMessages = ['分析空間中⋯⋯','辨識物件與區域⋯⋯','排列整理順序⋯⋯','標註重點位置⋯⋯'];
+const loadingMessages = ['傳送給 Gemini 分析中⋯⋯','辨識物件與區域⋯⋯','排列整理順序⋯⋯','標註重點位置⋯⋯'];
 
 goBtn.addEventListener('click', runAnalysis);
 
@@ -674,14 +675,15 @@ async function runAnalysis(){
   }, 1600);
 
   const systemPrompt = `你是專業的空間整理顧問。使用者會提供一張空間照片與整理需求。
-請仔細觀察照片中的實際物件與區域,並嚴格只回傳一個 JSON 物件,不要有任何前言、說明文字或 markdown 符號,格式如下:
+請仔細觀察照片中的實際物件與區域,並嚴格依照規定的 JSON 格式回傳結構數據。
+格式範例:
 {
   "summary": "一句話描述這個空間目前的狀況與整理方向,呼應使用者需求,20-40字",
   "items": [
     {"title":"重點名稱(6-10字)","category":"keep|relocate|discard|clean","detail":"具體建議,15-30字","x":數字0-100,"y":數字0-100}
   ],
   "steps": ["步驟一","步驟二","..."],
-  "imagePrompt": "一段英文 prompt,給 Midjourney/ChatGPT/Gemini 等圖片生成工具使用,80-130字"
+  "imagePrompt": "一段英文 prompt,給圖片生成工具使用,80-130字"
 }
 規則:
 - items 需要 4 到 7 個,x/y 是該重點在照片中的大略位置(百分比,左上為0,0),必須根據照片實際內容估計,不可全部集中在同一點
@@ -693,39 +695,51 @@ async function runAnalysis(){
   3. 第三段融入使用者的整理需求與風格偏好,只描述「物品整齊度、收納方式、表面乾淨度」的改變,不可提及更動格局、牆面、窗戶、家具擺放位置
   4. 最後一句必須重申一次:"Only tidy and organize the visible items — the room structure and camera angle must remain identical to the original photo."
   5. 可在描述中加入攝影風格關鍵字(如 photorealistic, interior photography, natural lighting)以提升生成品質,但不可放在第一句或最後一句
-  總長度 100-160 字
-- 只回傳 JSON,不要加 \`\`\`json 或任何其他文字`;
+  總長度 100-160 字`;
+
+  const model = 'gemini-2.5-flash';
+  const apiKey = geminiKeyInput.value.trim();
 
   try{
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey
+      },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
-        max_tokens: 1000,
-        system: systemPrompt,
-        messages: [
+        systemInstruction: {
+          parts: [{ text: systemPrompt }]
+        },
+        contents: [
           {
             role: "user",
-            content: [
-              { type: "image", source: { type: "base64", media_type: uploadedMediaType, data: uploadedBase64 } },
-              { type: "text", text: `整理需求:${reqInput.value.trim()}` }
+            parts: [
+              { inlineData: { mimeType: uploadedMediaType, data: uploadedBase64 } },
+              { text: `整理需求:${reqInput.value.trim()}` }
             ]
           }
-        ]
+        ],
+        generationConfig: {
+          responseMimeType: "application/json"
+        }
       })
     });
 
-    if (!response.ok) throw new Error('API 請求失敗 (' + response.status + ')');
+    if (!response.ok) {
+      const errBody = await response.text();
+      throw new Error('Gemini API 錯誤 (' + response.status + ')：' + errBody.slice(0, 200));
+    }
+    
     const data = await response.json();
-    const rawText = (data.content || []).map(b => b.text || '').join('').trim();
+    const rawText = data.candidates[0].content.parts[0].text.trim();
     const cleaned = rawText.replace(/^```json\s*|^```\s*|```$/g, '').trim();
     const plan = JSON.parse(cleaned);
 
     renderResult(plan);
   }catch(err){
     console.error(err);
-    errMsg.textContent = '生成失敗,請稍後再試一次。(' + err.message + ')';
+    errMsg.textContent = '分析失敗，請檢查 API Key 是否正確。(' + err.message + ')';
     errMsg.style.display = 'block';
     emptyState.style.display = 'flex';
   }finally{
@@ -838,7 +852,6 @@ async function runPhotoGeneration(){
 
   const wrappedPrompt = `Edit the uploaded photo directly. Do not generate a new room. Keep the exact same camera angle, room layout, walls, windows, doors, ceiling height, and all furniture positions unchanged. Only tidy and organize the visible items according to this request: ${reqInput.value.trim()}. Make the space look clean, decluttered and well-organized, photorealistic, natural lighting. Only tidy and organize the visible items — the room structure and camera angle must remain identical to the original photo.`;
 
-  // 修改重點：換成官方最新支援影像生成與多模態應用的 gemini-3.1-flash-image
   const model = 'gemini-3.1-flash-image';
   const apiKey = geminiKeyInput.value.trim();
 
