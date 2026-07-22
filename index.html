@@ -67,8 +67,6 @@
     color:var(--ink-soft);
     line-height:1.55;
   }
-
-  /* ---- app layout: side nav + view area ---- */
   .app-layout{
     display:flex;
     gap:24px;
@@ -77,7 +75,6 @@
   @media (max-width:700px){
     .app-layout{flex-direction:column;}
   }
-
   .side-nav{
     position:sticky;
     top:24px;
@@ -134,18 +131,14 @@
     text-transform:uppercase;
     opacity:.75;
   }
-
   .view-area{flex:1;min-width:0;}
   .view{display:none;}
   .view.active{display:block;}
-
   .panel{
     background:var(--paper);
     border:1px solid var(--line);
     border-radius:2px;
   }
-
-  /* ---- manual mode grid ---- */
   .grid{
     display:grid;
     grid-template-columns:340px 1fr;
@@ -155,7 +148,6 @@
   @media (max-width:860px){
     .grid{grid-template-columns:1fr;}
   }
-
   .input-panel{
     position:sticky;
     top:24px;
@@ -223,7 +215,6 @@
   }
   textarea:focus{outline:2px solid var(--indigo);outline-offset:1px;}
   textarea::placeholder{color:#9C9A8F;}
-
   .go-btn{
     width:100%;
     padding:13px 16px;
@@ -247,14 +238,12 @@
     color:var(--indigo);
   }
   .go-btn.outline:hover:not(:disabled){background:var(--stone-deep);}
-
   .err-msg{
     margin-top:12px;
     font-size:13px;
     color:var(--brick);
     display:none;
   }
-
   .divider{
     height:1px;
     background:var(--line);
@@ -279,8 +268,6 @@
     margin-bottom:16px;
   }
   .key-input:focus{outline:2px solid var(--indigo);outline-offset:1px;}
-
-  /* ---- result panel (shared visual language) ---- */
   .result-panel{
     padding:26px 26px 30px;
     min-height:420px;
@@ -302,7 +289,6 @@
     line-height:1;
   }
   .result-empty p{max-width:300px;font-size:13.5px;line-height:1.55;margin:0;}
-
   .loading{
     height:420px;
     display:none;
@@ -321,10 +307,8 @@
   }
   @keyframes spin{to{transform:rotate(360deg);}}
   .loading .lmsg{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-soft);letter-spacing:.04em;}
-
   .result-body{display:none;}
   .result-body.active{display:block;}
-
   .annot-wrap{
     position:relative;
     border-radius:2px;
@@ -367,7 +351,6 @@
     letter-spacing:.03em;
     margin:0 0 26px;
   }
-
   .summary-block{
     font-family:'Fraunces',serif;
     font-size:19px;
@@ -378,7 +361,6 @@
     margin-bottom:24px;
     border-bottom:1px solid var(--line);
   }
-
   .section-label{
     font-family:'IBM Plex Mono',monospace;
     font-size:11px;
@@ -387,7 +369,6 @@
     color:var(--indigo);
     margin:0 0 14px;
   }
-
   .item-list{
     display:flex;
     flex-direction:column;
@@ -440,7 +421,6 @@
   .tag.discard{background:var(--brick);}
   .tag.clean{background:var(--mustard);color:var(--ink);}
   .item-detail{font-size:13.5px;color:var(--ink-soft);line-height:1.5;margin:0;}
-
   .steps-list{
     list-style:none;
     margin:0;padding:0;
@@ -467,8 +447,6 @@
     font-size:17px;
     color:var(--indigo);
   }
-
-  /* ---- ESP32 mode ---- */
   .esp32-grid{
     display:grid;
     grid-template-columns:340px 1fr;
@@ -483,7 +461,6 @@
     top:24px;
     padding:26px 24px 28px;
   }
-
   .status-row{
     display:flex;
     align-items:center;
@@ -512,7 +489,6 @@
     letter-spacing:.02em;
   }
   .status-text b{color:var(--ink);font-weight:600;}
-
   .esp32-panel input[type="text"]{
     width:100%;
     font-family:'IBM Plex Mono',monospace;
@@ -525,7 +501,6 @@
     margin-bottom:16px;
   }
   .esp32-panel input[type="text"]:focus{outline:2px solid var(--indigo);outline-offset:1px;}
-
   .condition-list{
     display:flex;
     flex-direction:column;
@@ -603,7 +578,6 @@
     color:var(--ink);
   }
   .cond-inputs .num-input:focus{outline:2px solid var(--indigo);outline-offset:1px;}
-
   .esp-alert{
     display:none;
     align-items:center;
@@ -623,7 +597,6 @@
     background:var(--paper);
     flex-shrink:0;
   }
-
   .switch{
     position:relative;
     width:36px;height:20px;
@@ -649,7 +622,6 @@
   }
   .switch input:checked + .switch-track{background:var(--sage);}
   .switch input:checked + .switch-track::before{transform:translateX(16px);}
-
   .auto-toggle-row{
     display:flex;
     align-items:center;
@@ -673,7 +645,6 @@
     margin-top:2px;
     letter-spacing:.02em;
   }
-
   .esp32-note{
     font-size:11.5px;
     color:var(--ink-soft);
@@ -684,7 +655,6 @@
     padding:11px 12px;
     margin-top:20px;
   }
-
   .log-list{
     display:flex;
     flex-direction:column;
@@ -717,7 +687,6 @@
   }
   .log-badge.tidy{background:var(--brick);}
   .log-badge.ok{background:var(--sage);}
-
   .live-readouts{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
@@ -754,10 +723,7 @@
     color:var(--ink-soft);
     margin-left:3px;
   }
-
   ::selection{background:var(--mustard);color:var(--ink);}
-
-  /* ============ ACCOUNT BAR ============ */
   .account-bar{
     display:flex;
     justify-content:flex-end;
@@ -803,8 +769,6 @@
     color:var(--indigo);
   }
   .btn-mini.ghost:hover{background:var(--stone-deep);}
-
-  /* ============ MODAL ============ */
   .modal-scrim{
     position:fixed;inset:0;
     background:rgba(35,36,31,0.55);
@@ -916,8 +880,6 @@
   .auth-divider::before,.auth-divider::after{
     content:'';flex:1;height:1px;background:var(--line);
   }
-
-  /* ============ COMMUNITY VIEW ============ */
   .comm-head{
     display:flex;
     justify-content:space-between;
@@ -945,7 +907,6 @@
   }
   .comm-tab:hover{border-color:var(--indigo);color:var(--ink);}
   .comm-tab.active{background:var(--indigo);border-color:var(--indigo);color:var(--paper);}
-
   .setup-notice{
     background:var(--stone);
     border:1px dashed var(--line);
@@ -967,7 +928,6 @@
   .setup-notice ol{margin:12px 0 0;padding-left:20px;}
   .setup-notice li{margin-bottom:7px;}
   .setup-notice a{color:var(--indigo);}
-
   .comm-empty{
     text-align:center;
     color:var(--ink-soft);
@@ -981,7 +941,6 @@
     color:var(--stone-deep);
     margin-bottom:10px;
   }
-
   .plan-grid{
     display:grid;
     grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
@@ -1059,8 +1018,6 @@
   .icon-btn.liked svg{fill:var(--brick);stroke:var(--brick);}
   .icon-btn.saved{color:var(--mustard);}
   .icon-btn.saved svg{fill:var(--mustard);stroke:var(--mustard);}
-
-  /* featured banner */
   .featured-banner{
     background:var(--indigo);
     color:var(--paper);
@@ -1087,8 +1044,6 @@
   }
   .featured-banner .fb-meta{font-size:12.5px;color:rgba(248,247,243,.75);}
   .featured-banner .fb-body{flex:1;min-width:180px;}
-
-  /* share button in manual result */
   .share-row{
     margin-top:26px;
     padding-top:22px;
@@ -1098,8 +1053,6 @@
   .share-row.active{display:block;}
   .share-hint{font-size:12px;color:var(--ink-soft);margin:10px 0 0;line-height:1.5;}
   .share-hint.ok{color:var(--sage);font-weight:600;}
-
-  /* detail modal body */
   .detail-summary{
     font-family:'Fraunces',serif;
     font-size:18px;line-height:1.5;font-weight:500;
@@ -1116,12 +1069,11 @@
 </head>
 <body>
 <div class="wrap">
-
+ 
   <div class="account-bar" id="accountBar">
-    <!-- 由 JS 依登入狀態填入 -->
     <button class="btn-mini" id="loginBtn">登入 / 註冊</button>
   </div>
-
+ 
   <div class="masthead">
     <div>
       <p class="eyebrow">Spatial Plan · 空間整理師</p>
@@ -1129,9 +1081,9 @@
     </div>
     <p>上傳照片,或連接 ESP32 自動偵測,AI 會判斷空間狀況並排出整理計畫。</p>
   </div>
-
+ 
   <div class="app-layout">
-
+ 
     <nav class="side-nav">
       <button class="nav-btn active" id="navManual" data-view="manual">
         <svg viewBox="0 0 24 24"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
@@ -1149,13 +1101,13 @@
         <span class="nav-sub">Community</span>
       </button>
     </nav>
-
+ 
     <div class="view-area">
-
-      <!-- ============ MANUAL UPLOAD VIEW ============ -->
+ 
+      <!-- MANUAL UPLOAD VIEW -->
       <div class="view active" id="manualView">
         <div class="grid">
-
+ 
           <div class="panel input-panel">
             <span class="field-label">01 · 空間照片</span>
             <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="上傳照片">
@@ -1167,43 +1119,43 @@
               <img id="previewImg" alt="已上傳的空間照片預覽">
               <div class="swap" id="swapBtn">更換照片</div>
             </div>
-
+ 
             <span class="field-label">02 · 整理需求</span>
             <textarea id="reqInput" placeholder="例如:想要極簡風格、書籍要集中收納、有小孩要注意收納高度⋯⋯"></textarea>
-
+ 
             <span class="field-label">03 · Anthropic API Key(選填 · 進階功能)</span>
             <p class="field-hint">留空即可使用 —— 系統會用內建的離線示範引擎,直接根據你的照片顏色分布與整理需求排出建議,不需要任何 API Key,可以直接下載或架站(GitHub Pages 等)給任何人使用。如果你想要更準確、真正由 AI 逐一辨識照片內容的分析結果,可以貼上自己的 Anthropic API Key(僅存在瀏覽器記憶體,不會被儲存)。沒有 Key 可以到 <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a> 申請。</p>
             <input type="password" id="anthropicKeyInput" class="key-input" placeholder="貼上 Anthropic API Key(選填,留空使用離線示範模式)" autocomplete="off">
-
+ 
             <button class="go-btn" id="goBtn" disabled>生成整理計畫</button>
             <div class="err-msg" id="errMsg"></div>
           </div>
-
+ 
           <div class="panel result-panel">
             <div class="result-empty" id="emptyState">
               <div class="glyph">*</div>
               <p>上傳照片並填寫需求後,整理計畫會顯示在這裡 —— 附帶照片上的標註重點。</p>
             </div>
-
+ 
             <div class="loading" id="loadingState">
               <div class="spinner"></div>
               <p class="lmsg" id="loadingMsg">分析空間中⋯⋯</p>
             </div>
-
+ 
             <div class="result-body" id="resultBody">
               <div class="annot-wrap" id="annotWrap">
                 <img id="resultImg" alt="標註後的空間照片">
               </div>
               <p class="annot-caption">點擊照片上的標記,對照下方整理項目</p>
-
+ 
               <div class="summary-block" id="summaryBlock"></div>
-
+ 
               <p class="section-label">整理重點</p>
               <div class="item-list" id="itemList"></div>
-
+ 
               <p class="section-label">建議步驟</p>
               <ol class="steps-list" id="stepsList"></ol>
-
+ 
               <div class="share-row" id="shareRow">
                 <p class="section-label">分享這份計畫</p>
                 <button class="go-btn outline" id="sharePlanBtn">分享到社群公開牆</button>
@@ -1211,14 +1163,14 @@
               </div>
             </div>
           </div>
-
+ 
         </div>
       </div>
-
-      <!-- ============ ESP32 DETECTION VIEW ============ -->
+ 
+      <!-- ESP32 DETECTION VIEW -->
       <div class="view" id="esp32View">
         <div class="esp32-grid">
-
+ 
           <div class="panel esp32-panel">
             <span class="field-label">01 · 裝置連線</span>
             <div class="status-row">
@@ -1228,9 +1180,9 @@
             <input type="text" id="espAddrInput" placeholder="ESP32 位址,例如 192.168.1.42">
             <p class="field-hint">填 ESP32 序列埠印出的 IP 位址(不用加 http:// 或結尾斜線)。手機/電腦要跟 ESP32 連同一個 Wi-Fi。若這個網頁是用 https 開啟(例如 GitHub Pages),部分瀏覽器可能會擋下對 http 裝置的連線 —— 若「連接 ESP32」一直失敗,可以改用 <code>http://localhost:8000</code> 本機伺服器方式開啟這個網頁測試。</p>
             <button class="go-btn" id="espConnectBtn">連接 ESP32</button>
-
+ 
             <div class="divider"></div>
-
+ 
             <span class="field-label">02 · 感測數值與判斷標準</span>
             <div class="condition-list">
               <div class="condition-row" data-metric="temp">
@@ -1310,7 +1262,7 @@
                 </div>
               </div>
             </div>
-
+ 
             <div class="auto-toggle-row">
               <span class="atr-text">自動偵測
                 <span class="atr-sub">數值輸入後即時比對判斷標準</span>
@@ -1320,28 +1272,28 @@
                 <span class="switch-track"></span>
               </label>
             </div>
-
+ 
             <button class="go-btn outline" id="espManualTriggerBtn">手動觸發一次判斷</button>
-
+ 
             <div class="esp32-note">按「連接 ESP32」會實際向裝置的 <code>/data</code> 網址讀取數值,連線成功後每 3 秒自動更新一次「ESP32 測得數值」,不需要手動輸入。</div>
           </div>
-
+ 
           <div class="panel result-panel">
             <div class="esp-alert" id="espAlert">
               <span class="dot"></span>
               <span id="espAlertText">建議進行環境整理</span>
             </div>
-
+ 
             <div class="result-empty" id="espEmptyState">
               <div class="glyph">*</div>
               <p>輸入 ESP32 測得數值與判斷標準後,比對結果與判斷紀錄會顯示在這裡。</p>
             </div>
-
+ 
             <div class="loading" id="espConnectingState">
               <div class="spinner"></div>
               <p class="lmsg">正在連接裝置⋯⋯</p>
             </div>
-
+ 
             <div class="result-body" id="espDashboard">
               <p class="section-label">即時感測數值</p>
               <div class="live-readouts">
@@ -1362,7 +1314,7 @@
                   <div class="r-value" id="rvDistance">—<span>cm</span></div>
                 </div>
               </div>
-
+ 
               <p class="section-label">判斷紀錄</p>
               <div class="log-list" id="espLogList">
                 <div class="log-row">
@@ -1373,11 +1325,11 @@
               </div>
             </div>
           </div>
-
+ 
         </div>
       </div>
-
-      <!-- ============ COMMUNITY VIEW ============ -->
+ 
+      <!-- COMMUNITY VIEW -->
       <div class="view" id="communityView">
         <div class="comm-head">
           <div class="comm-tabs" id="commTabs">
@@ -1388,7 +1340,7 @@
           </div>
           <button class="btn-mini ghost" id="commRefreshBtn">重新整理</button>
         </div>
-
+ 
         <div id="commSetupNotice" class="setup-notice" style="display:none;">
           <b>社群功能尚未設定 Firebase。</b>目前登入、分享、按讚都還無法運作。若這是你的比賽作品,請依下列步驟接上免費後端:
           <ol>
@@ -1399,7 +1351,7 @@
             <li>把安全性規則(見檔案底部註解)貼到 Firestore 規則頁。</li>
           </ol>
         </div>
-
+ 
         <div id="commContent">
           <div id="commFeatured"></div>
           <div class="plan-grid" id="planGrid"></div>
@@ -1413,12 +1365,12 @@
           </div>
         </div>
       </div>
-
+ 
     </div>
   </div>
 </div>
-
-<!-- ============ AUTH MODAL ============ -->
+ 
+<!-- AUTH MODAL -->
 <div class="modal-scrim" id="authScrim">
   <div class="modal">
     <div class="modal-head">
@@ -1449,8 +1401,8 @@
     <button class="go-btn" id="authSubmit">登入</button>
   </div>
 </div>
-
-<!-- ============ PLAN DETAIL MODAL ============ -->
+ 
+<!-- PLAN DETAIL MODAL -->
 <div class="modal-scrim" id="detailScrim">
   <div class="modal wide">
     <div class="modal-head">
@@ -1472,7 +1424,6 @@
     <ol class="steps-list" id="detailSteps"></ol>
   </div>
 </div>
-
 <script>
 /* ---------- nav switching ---------- */
 const navButtons = document.querySelectorAll('.nav-btn');
@@ -1481,7 +1432,7 @@ const viewMap = {
   esp32: document.getElementById('esp32View'),
   community: document.getElementById('communityView')
 };
-
+ 
 function switchView(target){
   navButtons.forEach(b => b.classList.toggle('active', b.dataset.view === target));
   Object.entries(viewMap).forEach(([key, el]) => {
@@ -1492,11 +1443,11 @@ function switchView(target){
   }
 }
 navButtons.forEach(b => b.addEventListener('click', () => switchView(b.dataset.view)));
-
-/* ---------- manual upload mode (existing logic) ---------- */
+ 
+/* ---------- manual upload mode ---------- */
 let uploadedBase64 = null;
 let uploadedMediaType = null;
-
+ 
 const dropzone = document.getElementById('dropzone');
 const fileInput = document.getElementById('fileInput');
 const previewWrap = document.getElementById('previewWrap');
@@ -1505,7 +1456,7 @@ const swapBtn = document.getElementById('swapBtn');
 const reqInput = document.getElementById('reqInput');
 const goBtn = document.getElementById('goBtn');
 const errMsg = document.getElementById('errMsg');
-
+ 
 const emptyState = document.getElementById('emptyState');
 const loadingState = document.getElementById('loadingState');
 const loadingMsg = document.getElementById('loadingMsg');
@@ -1516,11 +1467,11 @@ const summaryBlock = document.getElementById('summaryBlock');
 const itemList = document.getElementById('itemList');
 const stepsList = document.getElementById('stepsList');
 const anthropicKeyInput = document.getElementById('anthropicKeyInput');
-
+ 
 dropzone.addEventListener('click', () => fileInput.click());
 dropzone.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') fileInput.click(); });
 swapBtn.addEventListener('click', () => fileInput.click());
-
+ 
 ['dragover','dragenter'].forEach(ev => dropzone.addEventListener(ev, e => {
   e.preventDefault(); dropzone.classList.add('drag');
 }));
@@ -1535,7 +1486,7 @@ fileInput.addEventListener('change', e => {
   const f = e.target.files[0];
   if (f) handleFile(f);
 });
-
+ 
 function handleFile(file){
   if (!file.type.startsWith('image/')) return;
   uploadedMediaType = file.type;
@@ -1550,18 +1501,18 @@ function handleFile(file){
   };
   reader.readAsDataURL(file);
 }
-
+ 
 reqInput.addEventListener('input', updateGoState);
 function updateGoState(){
   const hasBasics = uploadedBase64 && reqInput.value.trim().length > 0;
   goBtn.disabled = !hasBasics;
 }
-
+ 
 const loadingMessages = ['分析空間中⋯⋯','辨識物件與區域⋯⋯','排列整理順序⋯⋯','標註重點位置⋯⋯'];
-
+ 
 goBtn.addEventListener('click', runAnalysis);
-
-/* ---------- 離線示範引擎(不需要任何 API Key,純本地運算) ---------- */
+ 
+/* ---------- 離線示範引擎 ---------- */
 const keywordItemPool = [
   { keys:['書','書籍','書櫃','書架'], title:'書籍收納區', detail:'依主題或使用頻率分類上架,常看的書放在順手的高度。', category:'relocate' },
   { keys:['小孩','孩子','兒童','幼兒'], title:'兒童安全收納', detail:'降低常用物品的收納高度,尖角或危險物品移到孩子拿不到的地方。', category:'relocate' },
@@ -1579,15 +1530,14 @@ const genericItemPool = [
   { title:'窗邊區域', detail:'保持窗邊淨空,讓採光與通風不受阻礙。', category:'keep' },
   { title:'雜物堆放處', detail:'將暫時找不到定位的雜物集中一處,方便之後統一處理。', category:'clean' }
 ];
-
-// 用 canvas 分析照片各區塊的亮度變化程度(當作「雜亂程度」的替代指標),完全在本機運算
+ 
 function analyzeImageOffline(imgEl){
   const cols = 6, rows = 5;
   const cells = [];
   let w = imgEl.naturalWidth || imgEl.width || 0;
   let h = imgEl.naturalHeight || imgEl.height || 0;
   let imageData = null, canvasW = 0, canvasH = 0;
-
+ 
   if (w && h){
     try{
       const maxDim = 200;
@@ -1601,7 +1551,7 @@ function analyzeImageOffline(imgEl){
       imageData = ctx.getImageData(0, 0, canvasW, canvasH).data;
     }catch(e){ imageData = null; }
   }
-
+ 
   for (let r = 0; r < rows; r++){
     for (let c = 0; c < cols; c++){
       const cx = (c + 0.5) / cols * 100;
@@ -1627,7 +1577,7 @@ function analyzeImageOffline(imgEl){
   }
   return cells;
 }
-
+ 
 function pickOfflinePoints(cells, count){
   const sorted = cells.slice().sort((a,b) => b.score - a.score);
   const picked = [];
@@ -1642,12 +1592,12 @@ function pickOfflinePoints(cells, count){
   }
   return picked;
 }
-
+ 
 function buildOfflinePlan(requirementRaw, imgEl){
   const requirement = (requirementRaw || '').trim();
   const lowerReq = requirement.toLowerCase();
   const matched = keywordItemPool.filter(k => k.keys.some(kw => lowerReq.includes(kw)));
-
+ 
   let pool = matched.slice(0, 3).map(m => ({ title: m.title, detail: m.detail, category: m.category }));
   for (const g of genericItemPool){
     if (pool.length >= 6) break;
@@ -1655,10 +1605,10 @@ function buildOfflinePlan(requirementRaw, imgEl){
   }
   const itemCount = Math.min(7, Math.max(4, pool.length));
   pool = pool.slice(0, itemCount);
-
+ 
   const cells = analyzeImageOffline(imgEl);
   const points = pickOfflinePoints(cells, pool.length);
-
+ 
   const items = pool.map((it, i) => ({
     title: it.title,
     category: it.category,
@@ -1666,14 +1616,14 @@ function buildOfflinePlan(requirementRaw, imgEl){
     x: points[i] ? Math.round(points[i].x) : Math.round(10 + 80 * i / Math.max(1, pool.length - 1)),
     y: points[i] ? Math.round(points[i].y) : 50
   }));
-
+ 
   const avgScore = cells.length ? cells.reduce((s,c) => s + c.score, 0) / cells.length : 0;
   const busy = avgScore > 30;
   const reqText = requirement || '讓空間更整齊好用';
   const summary = busy
     ? `這個空間目前物品分布較密集、明暗對比明顯,建議依照「${reqText}」的方向,優先處理較集中雜亂的區域。`
     : `這個空間整體算是簡潔,只有少數幾處需要留意,建議依照「${reqText}」的方向做局部微調即可。`;
-
+ 
   const steps = [
     `先依「${reqText}」為主軸,把物品概略分成保留、清潔、移位、清除四類。`,
     '優先處理標記為「清除」的物品,騰出更多可運用的空間。',
@@ -1684,27 +1634,26 @@ function buildOfflinePlan(requirementRaw, imgEl){
   if (matched.some(m => m.title === '兒童安全收納')){
     steps.push('再次確認尖角、易碎或危險物品是否都已移到孩子拿不到的高度。');
   }
-
+ 
   return { summary, items, steps };
 }
-
+ 
 async function runAnalysis(){
   errMsg.style.display = 'none';
   emptyState.style.display = 'none';
   resultBody.classList.remove('active');
   loadingState.classList.add('active');
   goBtn.disabled = true;
-
+ 
   let msgIdx = 0;
   loadingMsg.textContent = loadingMessages[0];
   const msgTimer = setInterval(() => {
     msgIdx = (msgIdx + 1) % loadingMessages.length;
     loadingMsg.textContent = loadingMessages[msgIdx];
   }, 1600);
-
+ 
   const anthropicKey = anthropicKeyInput.value.trim();
-
-  // 沒有貼 Key:完全在本機運算,不呼叫任何外部 API,任何人下載或架站都能直接使用
+ 
   if (!anthropicKey){
     try{
       await new Promise(resolve => setTimeout(resolve, 900));
@@ -1722,7 +1671,7 @@ async function runAnalysis(){
     }
     return;
   }
-
+ 
   const systemPrompt = `你是專業的空間整理顧問。使用者會提供一張空間照片與整理需求。
 請仔細觀察照片中的實際物件與區域,並嚴格只回傳一個 JSON 物件,不要有任何前言、說明文字或 markdown 符號,格式如下:
 {
@@ -1737,7 +1686,7 @@ async function runAnalysis(){
 - category 只能是 keep(保留定位)、relocate(移位收納)、discard(清除)、clean(清潔整理)其中之一
 - steps 需要 4 到 6 個,依實際執行順序排列,每個步驟15-25字
 - 只回傳 JSON,不要加 \`\`\`json 或任何其他文字`;
-
+ 
   try{
     const headers = {
       "Content-Type": "application/json",
@@ -1745,7 +1694,7 @@ async function runAnalysis(){
       "anthropic-version": "2023-06-01",
       "anthropic-dangerous-direct-browser-access": "true"
     };
-
+ 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers,
@@ -1764,7 +1713,7 @@ async function runAnalysis(){
         ]
       })
     });
-
+ 
     if (!response.ok){
       const errBody = await response.text();
       throw new Error('API 請求失敗 (' + response.status + ')：' + errBody.slice(0, 200));
@@ -1772,7 +1721,7 @@ async function runAnalysis(){
     const data = await response.json();
     const rawText = (data.content || []).map(b => b.text || '').join('').trim();
     const plan = parsePlanJson(rawText);
-
+ 
     renderResult(plan);
   }catch(err){
     console.error(err);
@@ -1785,26 +1734,25 @@ async function runAnalysis(){
     goBtn.disabled = false;
   }
 }
-
-
+ 
 const categoryLabel = { keep:'保留定位', relocate:'移位收納', discard:'清除', clean:'清潔整理' };
-
+ 
 function parsePlanJson(rawText){
   let cleaned = rawText.replace(/^```json\s*|^```\s*|```$/gi, '').trim();
-
+ 
   const start = cleaned.indexOf('{');
   const end = cleaned.lastIndexOf('}');
   if (start !== -1 && end !== -1 && end > start){
     cleaned = cleaned.slice(start, end + 1);
   }
-
+ 
   try{
     return JSON.parse(cleaned);
   }catch(firstErr){
     let repaired = cleaned
       .replace(/,\s*([\]}])/g, '$1')
       .replace(/[\u0000-\u001F]+/g, ' ');
-
+ 
     try{
       return JSON.parse(repaired);
     }catch(secondErr){
@@ -1813,18 +1761,18 @@ function parsePlanJson(rawText){
     }
   }
 }
-
+ 
 function renderResult(plan){
   resultImg.src = previewImg.src;
-
+ 
   summaryBlock.textContent = plan.summary || '';
-
+ 
   itemList.innerHTML = '';
   annotWrap.querySelectorAll('.pin').forEach(p => p.remove());
-
+ 
   (plan.items || []).forEach((item, i) => {
     const num = i + 1;
-
+ 
     const pin = document.createElement('div');
     pin.className = 'pin';
     pin.style.left = Math.max(3, Math.min(97, item.x)) + '%';
@@ -1832,7 +1780,7 @@ function renderResult(plan){
     pin.textContent = num;
     pin.dataset.idx = num;
     annotWrap.appendChild(pin);
-
+ 
     const card = document.createElement('div');
     card.className = 'item-card';
     card.dataset.idx = num;
@@ -1848,7 +1796,7 @@ function renderResult(plan){
       </div>
     `;
     itemList.appendChild(card);
-
+ 
     const highlight = () => {
       annotWrap.querySelectorAll('.pin').forEach(p => p.classList.remove('active-pin'));
       itemList.querySelectorAll('.item-card').forEach(c => c.classList.remove('active-card'));
@@ -1861,17 +1809,16 @@ function renderResult(plan){
       card.scrollIntoView({ behavior:'smooth', block:'nearest' });
     });
   });
-
+ 
   stepsList.innerHTML = '';
   (plan.steps || []).forEach(step => {
     const li = document.createElement('li');
     li.textContent = step;
     stepsList.appendChild(li);
   });
-
+ 
   resultBody.classList.add('active');
-
-  // 提供給社群層取用:目前這份計畫 + 使用者需求 + 原圖
+ 
   window.__currentPlan = {
     summary: plan.summary || '',
     items: (plan.items || []).map(it => ({
@@ -1885,13 +1832,13 @@ function renderResult(plan){
   };
   if (typeof window.__onPlanReady === 'function') window.__onPlanReady();
 }
-
+ 
 function escapeHtml(str){
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
 }
-
+ 
 /* ---------- ESP32 detection mode ---------- */
 const espConnectBtn = document.getElementById('espConnectBtn');
 const espAddrInput = document.getElementById('espAddrInput');
@@ -1907,31 +1854,45 @@ const rvTemp = document.getElementById('rvTemp');
 const rvHumid = document.getElementById('rvHumid');
 const espAlert = document.getElementById('espAlert');
 const espAlertText = document.getElementById('espAlertText');
-
+ 
 let espConnected = false;
 let espPollTimer = null;
-
+ 
 function espUrl(path){
   let addr = espAddrInput.value.trim();
   addr = addr.replace(/^https?:\/\//, '').replace(/\/+$/, '');
   return 'http://' + addr + path;
 }
-
-// 對應 Arduino 端 /data 回傳格式:成功 {temperature, humidity};失敗 (HTTP 500) {error}
+ 
+// 從 /data 回傳的 JSON 取出數值,相容多種常見欄位名稱
+function pickNum(data, keys){
+  for (const k of keys){
+    const v = data[k];
+    if (typeof v === 'number' && !isNaN(v)) return v;
+    if (typeof v === 'string' && v !== '' && !isNaN(parseFloat(v))) return parseFloat(v);
+  }
+  return null;
+}
+function applyEspData(data){
+  const map = {
+    temp:     ['temperature', 'temp', 'tem'],
+    humidity: ['humidity', 'humid', 'hum'],
+    light:    ['light', 'lux', 'illuminance', 'lightLevel', 'light_level', 'ldr'],
+    distance: ['distance', 'dist', 'range']
+  };
+  metricConfigs.forEach(cfg => {
+    const v = pickNum(data, map[cfg.key] || []);
+    if (v !== null) cfg.measuredInput.value = v;
+  });
+}
+ 
 async function espFetchOnce(){
   try{
     const res = await fetch(espUrl('/data'), { cache: 'no-store' });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
-
-    const tempCfg = metricConfigs.find(c => c.key === 'temp');
-    const humidCfg = metricConfigs.find(c => c.key === 'humidity');
-    if (tempCfg && typeof data.temperature === 'number'){
-      tempCfg.measuredInput.value = data.temperature;
-    }
-    if (humidCfg && typeof data.humidity === 'number'){
-      humidCfg.measuredInput.value = data.humidity;
-    }
+ 
+    applyEspData(data);
     evaluateConditions();
     espStatusDot.className = 'status-dot connected';
     espStatusText.innerHTML = '已連接 —— <b>' + espAddrInput.value.trim() + '</b>';
@@ -1941,10 +1902,9 @@ async function espFetchOnce(){
     espStatusText.innerHTML = '連線中斷或讀取失敗 —— <b>' + espAddrInput.value.trim() + '</b>(' + err.message + ')';
   }
 }
-
+ 
 espConnectBtn.addEventListener('click', async () => {
   if (espConnected){
-    // 中斷連線
     espConnected = false;
     if (espPollTimer) { clearInterval(espPollTimer); espPollTimer = null; }
     espStatusDot.className = 'status-dot';
@@ -1954,40 +1914,36 @@ espConnectBtn.addEventListener('click', async () => {
     espEmptyState.style.display = 'flex';
     return;
   }
-
+ 
   const addr = espAddrInput.value.trim();
   if (!addr){
     espStatusText.innerHTML = '請先填入 ESP32 的 IP 位址';
     return;
   }
-
+ 
   espEmptyState.style.display = 'none';
   espConnectingState.classList.add('active');
   espStatusDot.className = 'status-dot connecting';
   espStatusText.innerHTML = '連接中 —— <b>' + addr + '</b>';
   espConnectBtn.disabled = true;
-
+ 
   try{
     const res = await fetch(espUrl('/data'), { cache: 'no-store' });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
-
+ 
     espConnected = true;
     espConnectingState.classList.remove('active');
     espConnectBtn.disabled = false;
     espConnectBtn.textContent = '中斷連線';
     espStatusDot.className = 'status-dot connected';
     espStatusText.innerHTML = '已連接 —— <b>' + addr + '</b>';
-
+ 
     espDashboard.classList.add('active');
-    // 立即套用第一次讀到的數值
-    const tempCfg = metricConfigs.find(c => c.key === 'temp');
-    const humidCfg = metricConfigs.find(c => c.key === 'humidity');
-    if (tempCfg && typeof data.temperature === 'number') tempCfg.measuredInput.value = data.temperature;
-    if (humidCfg && typeof data.humidity === 'number') humidCfg.measuredInput.value = data.humidity;
+    applyEspData(data);
     evaluateConditions();
-
-    espPollTimer = setInterval(espFetchOnce, 3000); // 每 3 秒自動更新一次數值
+ 
+    espPollTimer = setInterval(espFetchOnce, 3000);
   }catch(err){
     console.error('連接 ESP32 失敗', err);
     espConnectingState.classList.remove('active');
@@ -1997,43 +1953,41 @@ espConnectBtn.addEventListener('click', async () => {
     espEmptyState.style.display = 'flex';
   }
 });
-
-/* ---- 感測數值 vs 判斷標準:比對邏輯 ---- */
+ 
 const rvLight = document.getElementById('rvLight');
 const rvDistance = document.getElementById('rvDistance');
-
+ 
 const metricConfigs = [
   { key: 'temp',     name: '溫度',    unit: '°C',  direction: 'over',  measuredInput: document.getElementById('tempMeasured'),     thresholdInput: document.getElementById('tempThreshold'),     resultEl: document.getElementById('condResultTemp'),     readoutEl: rvTemp,     resetBtn: document.getElementById('tempResetBtn') },
   { key: 'humidity', name: '相對濕度', unit: '%',   direction: 'over',  measuredInput: document.getElementById('humidityMeasured'), thresholdInput: document.getElementById('humidityThreshold'), resultEl: document.getElementById('condResultHumidity'), readoutEl: rvHumid,    resetBtn: document.getElementById('humidityResetBtn') },
   { key: 'light',    name: '光照度',  unit: 'lux', direction: 'under', measuredInput: document.getElementById('lightMeasured'),    thresholdInput: document.getElementById('lightThreshold'),    resultEl: document.getElementById('condResultLight'),    readoutEl: rvLight,    resetBtn: document.getElementById('lightResetBtn') },
   { key: 'distance', name: '淨空距離', unit: 'cm',  direction: 'under', measuredInput: document.getElementById('distanceMeasured'), thresholdInput: document.getElementById('distanceThreshold'), resultEl: document.getElementById('condResultDistance'), readoutEl: rvDistance, resetBtn: document.getElementById('distanceResetBtn') }
 ];
-
+ 
 function evaluateConditions(){
   let anyExceeded = false;
   let anyMeasured = false;
   const exceededNames = [];
-
+ 
   metricConfigs.forEach(cfg => {
     const measuredRaw = cfg.measuredInput.value;
     const thresholdRaw = cfg.thresholdInput.value;
     const measured = parseFloat(measuredRaw);
     const threshold = parseFloat(thresholdRaw);
-
-    // 即時數值卡片
+ 
     cfg.readoutEl.innerHTML = (measuredRaw === '' || isNaN(measured))
       ? '—<span>' + cfg.unit + '</span>'
       : measured + '<span>' + cfg.unit + '</span>';
-
+ 
     if (measuredRaw === '' || isNaN(measured)){
       cfg.resultEl.textContent = '尚未輸入';
       cfg.resultEl.className = 'cond-result';
       return;
     }
     anyMeasured = true;
-
+ 
     const isAlert = !isNaN(threshold) && (cfg.direction === 'under' ? measured < threshold : measured > threshold);
-
+ 
     if (isAlert){
       cfg.resultEl.textContent = cfg.direction === 'under' ? '低於標準' : '超過標準';
       cfg.resultEl.className = 'cond-result alert';
@@ -2044,17 +1998,17 @@ function evaluateConditions(){
       cfg.resultEl.className = 'cond-result ok';
     }
   });
-
+ 
   if (anyExceeded){
     espAlertText.textContent = '建議進行環境整理 —— ' + exceededNames.join('、') + '未達判斷標準';
     espAlert.classList.add('active');
   } else {
     espAlert.classList.remove('active');
   }
-
+ 
   return anyMeasured;
 }
-
+ 
 metricConfigs.forEach(cfg => {
   cfg.measuredInput.addEventListener('input', () => {
     if (autoDetectToggle.checked) evaluateConditions();
@@ -2067,15 +2021,15 @@ metricConfigs.forEach(cfg => {
     evaluateConditions();
   });
 });
-
+ 
 espManualTriggerBtn.addEventListener('click', () => {
   const hasMeasured = evaluateConditions();
-
+ 
   const row = document.createElement('div');
   row.className = 'log-row';
   const now = new Date();
   const timeStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
-
+ 
   const exceeded = espAlert.classList.contains('active');
   row.innerHTML = `
     <span class="log-time">${timeStr}</span>
@@ -2086,16 +2040,16 @@ espManualTriggerBtn.addEventListener('click', () => {
     espLogList.innerHTML = '';
   }
   espLogList.prepend(row);
-
+ 
   espDashboard.classList.add('active');
   espEmptyState.style.display = 'none';
 });
-
+ 
 autoDetectToggle.addEventListener('change', () => {
   if (autoDetectToggle.checked) evaluateConditions();
 });
 </script>
-
+ 
 <!--
   ╔══════════════════════════════════════════════════════════════════╗
   ║  社群功能設定說明(比賽 / 部署前必讀)                              ║
@@ -2139,7 +2093,7 @@ import {
   getDocs, query, orderBy, limit, serverTimestamp,
   arrayUnion, arrayRemove, increment
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
+ 
 /* ▼▼▼ 把你自己的 Firebase 設定貼在這裡 ▼▼▼ */
 const firebaseConfig = {
   apiKey: "AIzaSyCM9PJaVVZuex2kQ--WmpmhRUUBMyA911A",
@@ -2150,18 +2104,18 @@ const firebaseConfig = {
   appId: "1:434057290485:web:4e64f2bcdf4d7dbeea5bbc"
 };
 /* ▲▲▲ 設定結束 ▲▲▲ */
-
+ 
 const CONFIG_READY = !String(firebaseConfig.apiKey).includes("PASTE_");
-
+ 
 let auth = null, db = null, currentUser = null;
 let userSaved = new Set();     // 目前使用者收藏的 planId
 let allPlans = [];             // 已載入的社群計畫
 let activeTab = 'latest';
-
+ 
 /* ---------- 小工具 ---------- */
 const $ = id => document.getElementById(id);
 const catLabel = { keep:'保留定位', relocate:'移位收納', discard:'清除', clean:'清潔整理' };
-
+ 
 function esc(str){
   const d = document.createElement('div');
   d.textContent = str == null ? '' : String(str);
@@ -2189,7 +2143,7 @@ function withinWeek(ts){
   const then = ts.toDate ? ts.toDate().getTime() : new Date(ts).getTime();
   return (Date.now() - then) <= 7*24*60*60*1000;
 }
-
+ 
 // 壓縮圖片為縮圖(存進 Firestore,避免超過 1MB 文件上限)
 function compressImage(src, maxDim = 900, quality = 0.72){
   return new Promise((resolve, reject) => {
@@ -2210,7 +2164,7 @@ function compressImage(src, maxDim = 900, quality = 0.72){
     img.src = src;
   });
 }
-
+ 
 /* ==================================================================
    若尚未設定 Firebase:顯示提示,停用社群互動
    ================================================================== */
@@ -2231,7 +2185,7 @@ if (!CONFIG_READY){
   initShare();
   initCommunity();
   initDetailModal();
-
+ 
   onAuthStateChanged(auth, async (user) => {
     currentUser = user;
     if (user){
@@ -2257,7 +2211,7 @@ if (!CONFIG_READY){
     if ($('communityView').classList.contains('active')) renderTab();
   });
 }
-
+ 
 /* ---------- 帳號列 ---------- */
 function renderAccountBar(){
   const bar = $('accountBar');
@@ -2273,7 +2227,7 @@ function renderAccountBar(){
     $('loginBtn').addEventListener('click', openAuth);
   }
 }
-
+ 
 /* ---------- 登入 / 註冊 Modal ---------- */
 let authMode = 'login';
 function openAuth(){ $('authScrim').classList.add('active'); setAuthMode('login'); }
@@ -2330,10 +2284,10 @@ async function submitAuth(){
   const name = $('authName').value.trim();
   const errEl = $('authErr');
   errEl.classList.remove('active');
-
+ 
   if (!email || !pass){ showAuthErr('請填寫電子郵件與密碼。'); return; }
   if (authMode === 'register' && !name){ showAuthErr('請填寫暱稱。'); return; }
-
+ 
   $('authSubmit').disabled = true;
   try{
     if (authMode === 'register'){
@@ -2364,7 +2318,7 @@ function friendlyAuthError(err){
   if (c.includes('too-many-requests')) return '嘗試次數過多,請稍後再試。';
   return '發生錯誤:' + (err.message || c);
 }
-
+ 
 /* ---------- 分享到社群 ---------- */
 function initShare(){
   $('sharePlanBtn').addEventListener('click', sharePlan);
@@ -2390,7 +2344,7 @@ async function sharePlan(){
   if (!currentUser){ openAuth(); return; }
   const plan = window.__currentPlan;
   if (!plan){ return; }
-
+ 
   const btn = $('sharePlanBtn');
   const hint = $('shareHint');
   btn.disabled = true; btn.textContent = '分享中⋯⋯';
@@ -2420,7 +2374,7 @@ async function sharePlan(){
     btn.disabled = false; btn.textContent = '分享到社群公開牆';
   }
 }
-
+ 
 /* ---------- 社群載入與渲染 ---------- */
 function initCommunity(){
   window.__loadCommunity = loadCommunity;
@@ -2437,7 +2391,7 @@ async function loadCommunity(force){
   $('commSetupNotice').style.display = 'none';
   $('commContent').style.display = 'block';
   if (allPlans.length && !force){ renderTab(); return; }
-
+ 
   $('commLoading').classList.add('active');
   $('planGrid').innerHTML = '';
   $('commEmpty').style.display = 'none';
@@ -2463,7 +2417,7 @@ function renderTab(){
   featured.innerHTML = '';
   grid.innerHTML = '';
   empty.style.display = 'none';
-
+ 
   let list = allPlans.slice();
   if (activeTab === 'top'){
     list.sort((a,b) => (b.likeCount||0) - (a.likeCount||0));
@@ -2482,7 +2436,7 @@ function renderTab(){
     }
     list = list.filter(p => userSaved.has(p.id));
   }
-
+ 
   if (!list.length && !featured.innerHTML){
     empty.style.display = 'block';
     $('commEmptyText').innerHTML = activeTab === 'saved'
@@ -2490,7 +2444,7 @@ function renderTab(){
       : '還沒有人分享整理計畫。<br>到「手動上傳」生成一份,再按「分享到社群」吧。';
     return;
   }
-
+ 
   list.forEach((p, i) => grid.appendChild(planCard(p, activeTab === 'top' ? i+1 : null)));
 }
 function renderFeatured(p){
@@ -2513,7 +2467,7 @@ function planCard(p, rank){
   card.className = 'plan-card';
   const liked = currentUser && (p.likedBy || []).includes(currentUser.uid);
   const saved = userSaved.has(p.id);
-
+ 
   card.innerHTML =
     '<img class="pc-img" src="' + esc(p.thumb) + '" alt="整理計畫縮圖">' +
     '<div class="pc-body">' +
@@ -2529,14 +2483,14 @@ function planCard(p, rank){
           '<svg viewBox="0 0 24 24"><path d="M12 17.3 6.2 21l1.6-6.6L3 9.7l6.7-.6L12 3l2.3 6.1 6.7.6-4.8 4.7L17.8 21z"/></svg></button>' +
       '</div>' +
     '</div>';
-
+ 
   card.querySelector('.pc-img').addEventListener('click', () => openDetail(p));
   card.querySelector('.pc-summary').addEventListener('click', () => openDetail(p));
   card.querySelector('.like').addEventListener('click', () => toggleLike(p, card));
   card.querySelector('.save').addEventListener('click', () => toggleSave(p, card));
   return card;
 }
-
+ 
 async function toggleLike(p, card){
   if (!currentUser){ openAuth(); return; }
   const btn = card.querySelector('.like');
@@ -2559,7 +2513,7 @@ async function toggleLike(p, card){
       : { likedBy: arrayUnion(currentUser.uid),  likeCount: increment(1) });
   }catch(err){ console.error('按讚失敗', err); }
 }
-
+ 
 async function toggleSave(p, card){
   if (!currentUser){ openAuth(); return; }
   const btn = card.querySelector('.save');
@@ -2574,7 +2528,7 @@ async function toggleSave(p, card){
   }catch(err){ console.error('收藏失敗', err); }
   if (activeTab === 'saved') renderTab();
 }
-
+ 
 /* ---------- 詳細 Modal(重建標註圖) ---------- */
 function initDetailModal(){
   $('detailClose').addEventListener('click', closeDetail);
@@ -2585,18 +2539,18 @@ function openDetail(p){
   $('detailAuthor').textContent = p.authorName || '匿名';
   $('detailImg').src = p.thumb;
   $('detailSummary').textContent = p.summary || '';
-
+ 
   const reqEl = $('detailReq');
   if (p.requirement){
     reqEl.style.display = 'block';
     reqEl.innerHTML = '<b>整理需求:</b>' + esc(p.requirement);
   } else { reqEl.style.display = 'none'; }
-
+ 
   const annot = $('detailAnnot');
   annot.querySelectorAll('.pin').forEach(el => el.remove());
   const items = $('detailItems');
   items.innerHTML = '';
-
+ 
   (p.items || []).forEach((it, i) => {
     const num = i + 1;
     const pin = document.createElement('div');
@@ -2605,7 +2559,7 @@ function openDetail(p){
     pin.style.top = Math.max(3, Math.min(97, it.y)) + '%';
     pin.textContent = num;
     annot.appendChild(pin);
-
+ 
     const cat = it.category || 'keep';
     const card = document.createElement('div');
     card.className = 'item-card';
@@ -2615,7 +2569,7 @@ function openDetail(p){
       '<span class="tag ' + cat + '">' + (catLabel[cat] || cat) + '</span></div>' +
       '<p class="item-detail">' + esc(it.detail) + '</p></div>';
     items.appendChild(card);
-
+ 
     const hl = () => {
       annot.querySelectorAll('.pin').forEach(x => x.classList.remove('active-pin'));
       items.querySelectorAll('.item-card').forEach(x => x.classList.remove('active-card'));
@@ -2624,7 +2578,7 @@ function openDetail(p){
     pin.addEventListener('click', hl);
     card.addEventListener('click', hl);
   });
-
+ 
   const steps = $('detailSteps');
   steps.innerHTML = '';
   (p.steps || []).forEach(s => {
@@ -2632,7 +2586,7 @@ function openDetail(p){
     li.textContent = s;
     steps.appendChild(li);
   });
-
+ 
   $('detailScrim').classList.add('active');
 }
 </script>
