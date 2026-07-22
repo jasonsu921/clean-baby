@@ -1018,6 +1018,8 @@
   .icon-btn.liked svg{fill:var(--brick);stroke:var(--brick);}
   .icon-btn.saved{color:var(--mustard);}
   .icon-btn.saved svg{fill:var(--mustard);stroke:var(--mustard);}
+  .icon-btn.del:hover{color:var(--brick);}
+  .icon-btn.hide:hover{color:var(--indigo);}
   .featured-banner{
     background:var(--indigo);
     color:var(--paper);
@@ -2091,7 +2093,7 @@ import {
 import {
   getFirestore, collection, addDoc, doc, getDoc, setDoc, updateDoc,
   getDocs, query, orderBy, limit, serverTimestamp,
-  arrayUnion, arrayRemove, increment
+  arrayUnion, arrayRemove, increment, deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
  
 /* ▼▼▼ 把你自己的 Firebase 設定貼在這裡 ▼▼▼ */
@@ -2109,6 +2111,7 @@ const CONFIG_READY = !String(firebaseConfig.apiKey).includes("PASTE_");
  
 let auth = null, db = null, currentUser = null;
 let userSaved = new Set();     // 目前使用者收藏的 planId
+let userHidden = new Set();    // 目前使用者隱藏的 planId
 let allPlans = [];             // 已載入的社群計畫
 let activeTab = 'latest';
  
@@ -2200,11 +2203,14 @@ if (!CONFIG_READY){
           createdAt: serverTimestamp()
         });
         userSaved = new Set();
+        userHidden = new Set();
       } else {
         userSaved = new Set(snap.data().savedPlans || []);
+        userHidden = new Set(snap.data().hiddenPlans || []);
       }
     } else {
       userSaved = new Set();
+      userHidden = new Set();
     }
     renderAccountBar();
     refreshShareButton();
@@ -2418,7 +2424,7 @@ function renderTab(){
   grid.innerHTML = '';
   empty.style.display = 'none';
  
-  let list = allPlans.slice();
+  let list = allPlans.filter(p => !userHidden.has(p.id));
   if (activeTab === 'top'){
     list.sort((a,b) => (b.likeCount||0) - (a.likeCount||0));
   } else if (activeTab === 'week'){
@@ -2467,6 +2473,7 @@ function planCard(p, rank){
   card.className = 'plan-card';
   const liked = currentUser && (p.likedBy || []).includes(currentUser.uid);
   const saved = userSaved.has(p.id);
+  const isOwner = currentUser && p.uid === currentUser.uid;
  
   card.innerHTML =
     '<img class="pc-img" src="' + esc(p.thumb) + '" alt="整理計畫縮圖">' +
@@ -2481,6 +2488,13 @@ function planCard(p, rank){
           '<span class="lc">' + (p.likeCount||0) + '</span></button>' +
         '<button class="icon-btn save ' + (saved?'saved':'') + '" title="收藏">' +
           '<svg viewBox="0 0 24 24"><path d="M12 17.3 6.2 21l1.6-6.6L3 9.7l6.7-.6L12 3l2.3 6.1 6.7.6-4.8 4.7L17.8 21z"/></svg></button>' +
+        (isOwner
+          ? '<button class="icon-btn del" title="刪除這篇貼文">' +
+              '<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13M9 7V4h6v3"/></svg></button>'
+          : (currentUser
+              ? '<button class="icon-btn hide" title="隱藏這篇貼文(只影響你自己)">' +
+                  '<svg viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.2 4.2M9.9 4.9A9.8 9.8 0 0 1 12 4.7c5 0 8.6 3.5 10 7.3a12.6 12.6 0 0 1-3 4.3M6.1 6.5A12.4 12.4 0 0 0 2 12c1.4 3.8 5 7.3 10 7.3 1.3 0 2.5-.2 3.6-.6"/></svg></button>'
+              : '')) +
       '</div>' +
     '</div>';
  
@@ -2488,7 +2502,39 @@ function planCard(p, rank){
   card.querySelector('.pc-summary').addEventListener('click', () => openDetail(p));
   card.querySelector('.like').addEventListener('click', () => toggleLike(p, card));
   card.querySelector('.save').addEventListener('click', () => toggleSave(p, card));
+  const delBtn = card.querySelector('.del');
+  if (delBtn) delBtn.addEventListener('click', () => deletePlan(p));
+  const hideBtn = card.querySelector('.hide');
+  if (hideBtn) hideBtn.addEventListener('click', () => hidePlan(p));
   return card;
+}
+ 
+/* ---------- 刪除自己的貼文 ---------- */
+async function deletePlan(p){
+  if (!currentUser || p.uid !== currentUser.uid) return;
+  if (!confirm('確定要刪除這篇貼文嗎?刪除後無法復原。')) return;
+  try{
+    await deleteDoc(doc(db, 'plans', p.id));
+    allPlans = allPlans.filter(x => x.id !== p.id);
+    renderTab();
+  }catch(err){
+    console.error('刪除失敗', err);
+    alert('刪除失敗:' + (err.message || err));
+  }
+}
+ 
+/* ---------- 隱藏別人的貼文(只影響自己) ---------- */
+async function hidePlan(p){
+  if (!currentUser){ openAuth(); return; }
+  userHidden.add(p.id);
+  renderTab();
+  try{
+    await updateDoc(doc(db, 'users', currentUser.uid), {
+      hiddenPlans: arrayUnion(p.id)
+    });
+  }catch(err){
+    console.error('隱藏失敗', err);
+  }
 }
  
 async function toggleLike(p, card){
