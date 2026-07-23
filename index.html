@@ -1500,4 +1500,1145 @@ const keywordItemPool = [
   { keys:['衣','衣物','衣服','衣櫃'], title:'衣物收納區', detail:'依季節與類別分區吊掛或折疊,減少堆疊造成的凌亂感。', category:'relocate' },
   { keys:['極簡','簡約','簡單'], title:'多餘物品清點', detail:'盤點長期未使用的物品,優先考慮捐贈或丟棄以維持極簡感。', category:'discard' },
   { keys:['3c','電器','線材','電線'], title:'電線與 3C 整理', detail:'將雜亂的線材集中理線,減少桌面與地面上的視覺干擾。', category:'clean' },
-  { keys:['廚房','餐具','鍋'], title:'廚房用品收納', detail:'依使用頻率將鍋具餐具分層收納,常用的放在順手位置。', ca... （47 KB 剩餘）
+  { keys:['廚房','餐具','鍋'], title:'廚房用品收納', detail:'依使用頻率將鍋具餐具分層收納,常用的放在順手位置。', category:'relocate' },
+  { keys:['文件','紙','資料'], title:'文件與紙本整理', detail:'將文件分類歸檔,不需要的紙本盡早清除或數位化保存。', category:'discard' }
+];
+const genericItemPool = [
+  { title:'地面雜物區', detail:'將散落地面的物品歸位,淨空走道以確保動線通暢。', category:'clean' },
+  { title:'桌面堆疊物', detail:'把桌面上不常用的物品移到收納空間,只留下常用物品。', category:'relocate' },
+  { title:'牆角閒置物品', detail:'角落堆放已久的物品建議重新評估是否保留。', category:'discard' },
+  { title:'收納架整理', detail:'重新排列收納架上的物品,依類別分區擺放。', category:'keep' },
+  { title:'窗邊區域', detail:'保持窗邊淨空,讓採光與通風不受阻礙。', category:'keep' },
+  { title:'雜物堆放處', detail:'將暫時找不到定位的雜物集中一處,方便之後統一處理。', category:'clean' }
+];
+ 
+function analyzeImageOffline(imgEl){
+  const cols = 6, rows = 5;
+  const cells = [];
+  let w = imgEl.naturalWidth || imgEl.width || 0;
+  let h = imgEl.naturalHeight || imgEl.height || 0;
+  let imageData = null, canvasW = 0, canvasH = 0;
+ 
+  if (w && h){
+    try{
+      const maxDim = 200;
+      const scale = Math.min(1, maxDim / Math.max(w, h));
+      canvasW = Math.max(1, Math.round(w * scale));
+      canvasH = Math.max(1, Math.round(h * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = canvasW; canvas.height = canvasH;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(imgEl, 0, 0, canvasW, canvasH);
+      imageData = ctx.getImageData(0, 0, canvasW, canvasH).data;
+    }catch(e){ imageData = null; }
+  }
+ 
+  for (let r = 0; r < rows; r++){
+    for (let c = 0; c < cols; c++){
+      const cx = (c + 0.5) / cols * 100;
+      const cy = (r + 0.5) / rows * 100;
+      if (!imageData){
+        cells.push({ x: cx, y: cy, score: Math.random() * 40 });
+        continue;
+      }
+      const x0 = Math.floor(c * canvasW / cols), x1 = Math.floor((c + 1) * canvasW / cols);
+      const y0 = Math.floor(r * canvasH / rows), y1 = Math.floor((r + 1) * canvasH / rows);
+      let sum = 0, sumSq = 0, count = 0;
+      for (let y = y0; y < y1; y++){
+        for (let x = x0; x < x1; x++){
+          const idx = (y * canvasW + x) * 4;
+          const lum = 0.299*imageData[idx] + 0.587*imageData[idx+1] + 0.114*imageData[idx+2];
+          sum += lum; sumSq += lum*lum; count++;
+        }
+      }
+      const mean = count ? sum / count : 0;
+      const variance = count ? Math.max(0, sumSq / count - mean*mean) : 0;
+      cells.push({ x: cx, y: cy, score: Math.sqrt(variance) });
+    }
+  }
+  return cells;
+}
+ 
+function pickOfflinePoints(cells, count){
+  const sorted = cells.slice().sort((a,b) => b.score - a.score);
+  const picked = [];
+  for (const c of sorted){
+    if (picked.length >= count) break;
+    const tooClose = picked.some(p => Math.hypot(p.x - c.x, p.y - c.y) < 16);
+    if (!tooClose) picked.push(c);
+  }
+  for (const c of sorted){
+    if (picked.length >= count) break;
+    if (!picked.includes(c)) picked.push(c);
+  }
+  return picked;
+}
+ 
+function buildOfflinePlan(requirementRaw, imgEl){
+  const requirement = (requirementRaw || '').trim();
+  const lowerReq = requirement.toLowerCase();
+  const matched = keywordItemPool.filter(k => k.keys.some(kw => lowerReq.includes(kw)));
+ 
+  let pool = matched.slice(0, 3).map(m => ({ title: m.title, detail: m.detail, category: m.category }));
+  for (const g of genericItemPool){
+    if (pool.length >= 6) break;
+    if (!pool.some(p => p.title === g.title)) pool.push({ title: g.title, detail: g.detail, category: g.category });
+  }
+  const itemCount = Math.min(7, Math.max(4, pool.length));
+  pool = pool.slice(0, itemCount);
+ 
+  const cells = analyzeImageOffline(imgEl);
+  const points = pickOfflinePoints(cells, pool.length);
+ 
+  const items = pool.map((it, i) => ({
+    title: it.title,
+    category: it.category,
+    detail: it.detail,
+    x: points[i] ? Math.round(points[i].x) : Math.round(10 + 80 * i / Math.max(1, pool.length - 1)),
+    y: points[i] ? Math.round(points[i].y) : 50
+  }));
+ 
+  const avgScore = cells.length ? cells.reduce((s,c) => s + c.score, 0) / cells.length : 0;
+  const busy = avgScore > 30;
+  const reqText = requirement || '讓空間更整齊好用';
+  const summary = busy
+    ? `這個空間目前物品分布較密集、明暗對比明顯,建議依照「${reqText}」的方向,優先處理較集中雜亂的區域。`
+    : `這個空間整體算是簡潔,只有少數幾處需要留意,建議依照「${reqText}」的方向做局部微調即可。`;
+ 
+  const steps = [
+    `先依「${reqText}」為主軸,把物品概略分成保留、清潔、移位、清除四類。`,
+    '優先處理標記為「清除」的物品,騰出更多可運用的空間。',
+    '接著執行「清潔重點」項目,擦拭桌面、地面與容易堆積灰塵的角落。',
+    '把「移位收納」的物品依使用頻率搬到更合適的位置。',
+    '最後檢查「保留定位」的區域,做外觀上的微調與美化。'
+  ];
+  if (matched.some(m => m.title === '兒童安全收納')){
+    steps.push('再次確認尖角、易碎或危險物品是否都已移到孩子拿不到的高度。');
+  }
+ 
+  return { summary, items, steps };
+}
+ 
+async function runAnalysis(){
+  errMsg.style.display = 'none';
+  emptyState.style.display = 'none';
+  resultBody.classList.remove('active');
+  loadingState.classList.add('active');
+  goBtn.disabled = true;
+ 
+  let msgIdx = 0;
+  loadingMsg.textContent = loadingMessages[0];
+  const msgTimer = setInterval(() => {
+    msgIdx = (msgIdx + 1) % loadingMessages.length;
+    loadingMsg.textContent = loadingMessages[msgIdx];
+  }, 1600);
+ 
+  const anthropicKey = anthropicKeyInput.value.trim();
+ 
+  if (!anthropicKey){
+    try{
+      await new Promise(resolve => setTimeout(resolve, 900));
+      const plan = buildOfflinePlan(reqInput.value, previewImg);
+      renderResult(plan);
+    }catch(err){
+      console.error(err);
+      errMsg.textContent = '生成失敗,請稍後再試一次。(' + err.message + ')';
+      errMsg.style.display = 'block';
+      emptyState.style.display = 'flex';
+    }finally{
+      clearInterval(msgTimer);
+      loadingState.classList.remove('active');
+      goBtn.disabled = false;
+    }
+    return;
+  }
+ 
+  const systemPrompt = `你是專業的空間整理顧問。使用者會提供一張空間照片與整理需求。
+請仔細觀察照片中的實際物件與區域,並嚴格只回傳一個 JSON 物件,不要有任何前言、說明文字或 markdown 符號,格式如下:
+{
+  "summary": "一句話描述這個空間目前的狀況與整理方向,呼應使用者需求,20-40字",
+  "items": [
+    {"title":"重點名稱(6-10字)","category":"keep|relocate|discard|clean","detail":"具體建議,15-30字","x":數字0-100,"y":數字0-100}
+  ],
+  "steps": ["步驟一","步驟二","..."]
+}
+規則:
+- items 需要 4 到 7 個,x/y 是該重點在照片中的大略位置(百分比,左上為0,0),必須根據照片實際內容估計,不可全部集中在同一點
+- category 只能是 keep(保留定位)、relocate(移位收納)、discard(清除)、clean(清潔整理)其中之一
+- steps 需要 4 到 6 個,依實際執行順序排列,每個步驟15-25字
+- 只回傳 JSON,不要加 \`\`\`json 或任何其他文字`;
+ 
+  try{
+    const headers = {
+      "Content-Type": "application/json",
+      "x-api-key": anthropicKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true"
+    };
+ 
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "image", source: { type: "base64", media_type: uploadedMediaType, data: uploadedBase64 } },
+              { type: "text", text: `整理需求:${reqInput.value.trim()}` }
+            ]
+          }
+        ]
+      })
+    });
+ 
+    if (!response.ok){
+      const errBody = await response.text();
+      throw new Error('API 請求失敗 (' + response.status + ')：' + errBody.slice(0, 200));
+    }
+    const data = await response.json();
+    const rawText = (data.content || []).map(b => b.text || '').join('').trim();
+    const plan = parsePlanJson(rawText);
+ 
+    renderResult(plan);
+  }catch(err){
+    console.error(err);
+    errMsg.textContent = '生成失敗,請稍後再試一次。(' + err.message + ')';
+    errMsg.style.display = 'block';
+    emptyState.style.display = 'flex';
+  }finally{
+    clearInterval(msgTimer);
+    loadingState.classList.remove('active');
+    goBtn.disabled = false;
+  }
+}
+ 
+const categoryLabel = { keep:'保留定位', relocate:'移位收納', discard:'清除', clean:'清潔整理' };
+ 
+function parsePlanJson(rawText){
+  let cleaned = rawText.replace(/^```json\s*|^```\s*|```$/gi, '').trim();
+ 
+  const start = cleaned.indexOf('{');
+  const end = cleaned.lastIndexOf('}');
+  if (start !== -1 && end !== -1 && end > start){
+    cleaned = cleaned.slice(start, end + 1);
+  }
+ 
+  try{
+    return JSON.parse(cleaned);
+  }catch(firstErr){
+    let repaired = cleaned
+      .replace(/,\s*([\]}])/g, '$1')
+      .replace(/[\u0000-\u001F]+/g, ' ');
+ 
+    try{
+      return JSON.parse(repaired);
+    }catch(secondErr){
+      console.error('原始回傳內容:', rawText);
+      throw new Error('AI 回傳的格式無法解析,請再試一次');
+    }
+  }
+}
+ 
+function renderResult(plan){
+  resultImg.src = previewImg.src;
+ 
+  summaryBlock.textContent = plan.summary || '';
+ 
+  itemList.innerHTML = '';
+  annotWrap.querySelectorAll('.pin').forEach(p => p.remove());
+ 
+  (plan.items || []).forEach((item, i) => {
+    const num = i + 1;
+ 
+    const pin = document.createElement('div');
+    pin.className = 'pin';
+    pin.style.left = Math.max(3, Math.min(97, item.x)) + '%';
+    pin.style.top = Math.max(3, Math.min(97, item.y)) + '%';
+    pin.textContent = num;
+    pin.dataset.idx = num;
+    annotWrap.appendChild(pin);
+ 
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.dataset.idx = num;
+    const cat = item.category || 'keep';
+    card.innerHTML = `
+      <div class="item-num">${num}</div>
+      <div>
+        <div class="item-title-row">
+          <span class="item-title">${escapeHtml(item.title || '')}</span>
+          <span class="tag ${cat}">${categoryLabel[cat] || cat}</span>
+        </div>
+        <p class="item-detail">${escapeHtml(item.detail || '')}</p>
+      </div>
+    `;
+    itemList.appendChild(card);
+ 
+    const highlight = () => {
+      annotWrap.querySelectorAll('.pin').forEach(p => p.classList.remove('active-pin'));
+      itemList.querySelectorAll('.item-card').forEach(c => c.classList.remove('active-card'));
+      pin.classList.add('active-pin');
+      card.classList.add('active-card');
+    };
+    pin.addEventListener('click', highlight);
+    card.addEventListener('click', () => {
+      highlight();
+      card.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    });
+  });
+ 
+  stepsList.innerHTML = '';
+  (plan.steps || []).forEach(step => {
+    const li = document.createElement('li');
+    li.textContent = step;
+    stepsList.appendChild(li);
+  });
+ 
+  resultBody.classList.add('active');
+ 
+  window.__currentPlan = {
+    summary: plan.summary || '',
+    items: (plan.items || []).map(it => ({
+      title: it.title || '', detail: it.detail || '',
+      category: it.category || 'keep',
+      x: Number(it.x) || 50, y: Number(it.y) || 50
+    })),
+    steps: plan.steps || [],
+    requirement: reqInput.value.trim(),
+    imageSrc: previewImg.src
+  };
+  if (typeof window.__onPlanReady === 'function') window.__onPlanReady();
+}
+ 
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+ 
+/* ---------- ESP32 detection mode ---------- */
+const espConnectBtn = document.getElementById('espConnectBtn');
+const espAddrInput = document.getElementById('espAddrInput');
+const espStatusDot = document.getElementById('espStatusDot');
+const espStatusText = document.getElementById('espStatusText');
+const espEmptyState = document.getElementById('espEmptyState');
+const espConnectingState = document.getElementById('espConnectingState');
+const espDashboard = document.getElementById('espDashboard');
+const espManualTriggerBtn = document.getElementById('espManualTriggerBtn');
+const autoDetectToggle = document.getElementById('autoDetectToggle');
+const espLogList = document.getElementById('espLogList');
+const rvTemp = document.getElementById('rvTemp');
+const rvHumid = document.getElementById('rvHumid');
+const espAlert = document.getElementById('espAlert');
+const espAlertText = document.getElementById('espAlertText');
+ 
+let espConnected = false;
+let espPollTimer = null;
+ 
+function espUrl(path){
+  let addr = espAddrInput.value.trim();
+  addr = addr.replace(/^https?:\/\//, '').replace(/\/+$/, '');
+  return 'http://' + addr + path;
+}
+ 
+// 從 /data 回傳的 JSON 取出數值,相容多種常見欄位名稱
+function pickNum(data, keys){
+  for (const k of keys){
+    const v = data[k];
+    if (typeof v === 'number' && !isNaN(v)) return v;
+    if (typeof v === 'string' && v !== '' && !isNaN(parseFloat(v))) return parseFloat(v);
+  }
+  return null;
+}
+function applyEspData(data){
+  const map = {
+    temp:     ['temperature', 'temp', 'tem'],
+    humidity: ['humidity', 'humid', 'hum'],
+    light:    ['light', 'lux', 'illuminance', 'lightLevel', 'light_level', 'ldr']
+  };
+  metricConfigs.forEach(cfg => {
+    const v = pickNum(data, map[cfg.key] || []);
+    if (v !== null) cfg.measuredInput.value = v;
+  });
+}
+ 
+async function espFetchOnce(){
+  try{
+    const res = await fetch(espUrl('/data'), { cache: 'no-store' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+ 
+    applyEspData(data);
+    evaluateConditions();
+    espStatusDot.className = 'status-dot connected';
+    espStatusText.innerHTML = '已連接 —— <b>' + espAddrInput.value.trim() + '</b>';
+  }catch(err){
+    console.error('讀取 ESP32 數值失敗', err);
+    espStatusDot.className = 'status-dot connecting';
+    espStatusText.innerHTML = '連線中斷或讀取失敗 —— <b>' + espAddrInput.value.trim() + '</b>(' + err.message + ')';
+  }
+}
+ 
+espConnectBtn.addEventListener('click', async () => {
+  if (espConnected){
+    espConnected = false;
+    if (espPollTimer) { clearInterval(espPollTimer); espPollTimer = null; }
+    espStatusDot.className = 'status-dot';
+    espStatusText.innerHTML = '尚未連接 —— <b>離線</b>';
+    espConnectBtn.textContent = '連接 ESP32';
+    espDashboard.classList.remove('active');
+    espEmptyState.style.display = 'flex';
+    return;
+  }
+ 
+  const addr = espAddrInput.value.trim();
+  if (!addr){
+    espStatusText.innerHTML = '請先填入 ESP32 的 IP 位址';
+    return;
+  }
+ 
+  espEmptyState.style.display = 'none';
+  espConnectingState.classList.add('active');
+  espStatusDot.className = 'status-dot connecting';
+  espStatusText.innerHTML = '連接中 —— <b>' + addr + '</b>';
+  espConnectBtn.disabled = true;
+ 
+  try{
+    const res = await fetch(espUrl('/data'), { cache: 'no-store' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+ 
+    espConnected = true;
+    espConnectingState.classList.remove('active');
+    espConnectBtn.disabled = false;
+    espConnectBtn.textContent = '中斷連線';
+    espStatusDot.className = 'status-dot connected';
+    espStatusText.innerHTML = '已連接 —— <b>' + addr + '</b>';
+ 
+    espDashboard.classList.add('active');
+    applyEspData(data);
+    evaluateConditions();
+ 
+    espPollTimer = setInterval(espFetchOnce, 3000);
+  }catch(err){
+    console.error('連接 ESP32 失敗', err);
+    espConnectingState.classList.remove('active');
+    espConnectBtn.disabled = false;
+    espStatusDot.className = 'status-dot';
+    espStatusText.innerHTML = '連接失敗 —— <b>' + addr + '</b>(' + err.message + ')。請確認 IP 正確、同一個 Wi-Fi,且瀏覽器沒有擋下 http 連線。';
+    espEmptyState.style.display = 'flex';
+  }
+});
+ 
+const rvLight = document.getElementById('rvLight');
+ 
+const metricConfigs = [
+  { key: 'temp',     name: '溫度',    unit: '°C',  direction: 'over',  measuredInput: document.getElementById('tempMeasured'),     thresholdInput: document.getElementById('tempThreshold'),     resultEl: document.getElementById('condResultTemp'),     readoutEl: rvTemp,     resetBtn: document.getElementById('tempResetBtn') },
+  { key: 'humidity', name: '相對濕度', unit: '%',   direction: 'over',  measuredInput: document.getElementById('humidityMeasured'), thresholdInput: document.getElementById('humidityThreshold'), resultEl: document.getElementById('condResultHumidity'), readoutEl: rvHumid,    resetBtn: document.getElementById('humidityResetBtn') },
+  { key: 'light',    name: '光照度',  unit: 'lux', direction: 'under', measuredInput: document.getElementById('lightMeasured'),    thresholdInput: document.getElementById('lightThreshold'),    resultEl: document.getElementById('condResultLight'),    readoutEl: rvLight,    resetBtn: document.getElementById('lightResetBtn') }
+];
+ 
+function evaluateConditions(){
+  let anyExceeded = false;
+  let anyMeasured = false;
+  const exceededNames = [];
+ 
+  metricConfigs.forEach(cfg => {
+    const measuredRaw = cfg.measuredInput.value;
+    const thresholdRaw = cfg.thresholdInput.value;
+    const measured = parseFloat(measuredRaw);
+    const threshold = parseFloat(thresholdRaw);
+ 
+    cfg.readoutEl.innerHTML = (measuredRaw === '' || isNaN(measured))
+      ? '—<span>' + cfg.unit + '</span>'
+      : measured + '<span>' + cfg.unit + '</span>';
+ 
+    if (measuredRaw === '' || isNaN(measured)){
+      cfg.resultEl.textContent = '尚未輸入';
+      cfg.resultEl.className = 'cond-result';
+      return;
+    }
+    anyMeasured = true;
+ 
+    const isAlert = !isNaN(threshold) && (cfg.direction === 'under' ? measured < threshold : measured > threshold);
+ 
+    if (isAlert){
+      cfg.resultEl.textContent = cfg.direction === 'under' ? '低於標準' : '超過標準';
+      cfg.resultEl.className = 'cond-result alert';
+      anyExceeded = true;
+      exceededNames.push(cfg.name);
+    } else {
+      cfg.resultEl.textContent = '正常';
+      cfg.resultEl.className = 'cond-result ok';
+    }
+  });
+ 
+  if (anyExceeded){
+    espAlertText.textContent = '建議進行環境整理 —— ' + exceededNames.join('、') + '未達判斷標準';
+    espAlert.classList.add('active');
+  } else {
+    espAlert.classList.remove('active');
+  }
+ 
+  return anyMeasured;
+}
+ 
+metricConfigs.forEach(cfg => {
+  cfg.measuredInput.addEventListener('input', () => {
+    if (autoDetectToggle.checked) evaluateConditions();
+  });
+  cfg.thresholdInput.addEventListener('input', () => {
+    if (autoDetectToggle.checked) evaluateConditions();
+  });
+  cfg.resetBtn.addEventListener('click', () => {
+    cfg.measuredInput.value = 0;
+    evaluateConditions();
+  });
+});
+ 
+espManualTriggerBtn.addEventListener('click', () => {
+  const hasMeasured = evaluateConditions();
+ 
+  const row = document.createElement('div');
+  row.className = 'log-row';
+  const now = new Date();
+  const timeStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+ 
+  const exceeded = espAlert.classList.contains('active');
+  row.innerHTML = `
+    <span class="log-time">${timeStr}</span>
+    <span class="log-desc">${hasMeasured ? (exceeded ? '偵測到數值未達判斷標準' : '數值皆在判斷標準內') : '尚未輸入任何測得數值'}</span>
+    <span class="log-badge ${exceeded ? 'tidy' : 'ok'}">${exceeded ? '建議整理' : '正常'}</span>
+  `;
+  if (espLogList.children.length === 1 && espLogList.children[0].querySelector('.log-time').textContent === '尚無資料'){
+    espLogList.innerHTML = '';
+  }
+  espLogList.prepend(row);
+ 
+  espDashboard.classList.add('active');
+  espEmptyState.style.display = 'none';
+});
+ 
+autoDetectToggle.addEventListener('change', () => {
+  if (autoDetectToggle.checked) evaluateConditions();
+});
+</script>
+ 
+<!--
+  ╔══════════════════════════════════════════════════════════════════╗
+  ║  社群功能設定說明(比賽 / 部署前必讀)                              ║
+  ╠══════════════════════════════════════════════════════════════════╣
+  ║  1. 到 https://console.firebase.google.com/ 建立免費專案            ║
+  ║  2. Build → Authentication → 開啟「電子郵件/密碼」                  ║
+  ║  3. Build → Firestore Database → 建立資料庫                         ║
+  ║  4. 專案設定(齒輪)→ 你的應用程式 → 複製 firebaseConfig            ║
+  ║     貼到下方 const firebaseConfig = {...} 取代佔位字串              ║
+  ║  5. 到 Firestore 的「規則」頁,貼上以下規則後發布:                 ║
+  ║                                                                    ║
+  ║  rules_version = '2';                                              ║
+  ║  service cloud.firestore {                                         ║
+  ║    match /databases/{database}/documents {                        ║
+  ║      match /plans/{planId} {                                       ║
+  ║        allow read: if true;                                        ║
+  ║        allow create: if request.auth != null                      ║
+  ║                      && request.resource.data.uid == request.auth.uid; ║
+  ║        allow update: if request.auth != null;   // 按讚用          ║
+  ║        allow delete: if request.auth != null                      ║
+  ║                      && resource.data.uid == request.auth.uid;     ║
+  ║      }                                                             ║
+  ║      match /users/{userId} {                                      ║
+  ║        allow read: if true;                                        ║
+  ║        allow write: if request.auth != null                       ║
+  ║                     && request.auth.uid == userId;                ║
+  ║      }                                                             ║
+  ║    }                                                               ║
+  ║  }                                                                 ║
+  ╚══════════════════════════════════════════════════════════════════╝
+-->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged, createUserWithEmailAndPassword,
+  signInWithEmailAndPassword, signOut, updateProfile,
+  GoogleAuthProvider, signInWithPopup
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore, collection, addDoc, doc, getDoc, setDoc, updateDoc,
+  getDocs, query, orderBy, limit, serverTimestamp,
+  arrayUnion, arrayRemove, increment, deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+ 
+/* ▼▼▼ 把你自己的 Firebase 設定貼在這裡 ▼▼▼ */
+const firebaseConfig = {
+  apiKey: "AIzaSyCM9PJaVVZuex2kQ--WmpmhRUUBMyA911A",
+  authDomain: "tidy-test-1cb17.firebaseapp.com",
+  projectId: "tidy-test-1cb17",
+  storageBucket: "tidy-test-1cb17.firebasestorage.app",
+  messagingSenderId: "434057290485",
+  appId: "1:434057290485:web:4e64f2bcdf4d7dbeea5bbc"
+};
+/* ▲▲▲ 設定結束 ▲▲▲ */
+ 
+const CONFIG_READY = !String(firebaseConfig.apiKey).includes("PASTE_");
+ 
+let auth = null, db = null, currentUser = null;
+let userSaved = new Set();     // 目前使用者收藏的 planId
+let userHidden = new Set();    // 目前使用者隱藏的 planId
+let allPlans = [];             // 已載入的社群計畫
+let activeTab = 'latest';
+ 
+/* ---------- 小工具 ---------- */
+const $ = id => document.getElementById(id);
+const catLabel = { keep:'保留定位', relocate:'移位收納', discard:'清除', clean:'清潔整理' };
+ 
+function esc(str){
+  const d = document.createElement('div');
+  d.textContent = str == null ? '' : String(str);
+  return d.innerHTML;
+}
+function initials(name){
+  const n = (name || '?').trim();
+  return n ? n[0].toUpperCase() : '?';
+}
+function timeAgo(ts){
+  if (!ts) return '剛剛';
+  const then = ts.toDate ? ts.toDate().getTime() : new Date(ts).getTime();
+  const diff = Date.now() - then;
+  const m = Math.floor(diff/60000);
+  if (m < 1) return '剛剛';
+  if (m < 60) return m + ' 分鐘前';
+  const h = Math.floor(m/60);
+  if (h < 24) return h + ' 小時前';
+  const d = Math.floor(h/24);
+  if (d < 7) return d + ' 天前';
+  return Math.floor(d/7) + ' 週前';
+}
+function withinWeek(ts){
+  if (!ts) return true;
+  const then = ts.toDate ? ts.toDate().getTime() : new Date(ts).getTime();
+  return (Date.now() - then) <= 7*24*60*60*1000;
+}
+ 
+// 壓縮圖片為縮圖(存進 Firestore,避免超過 1MB 文件上限)
+function compressImage(src, maxDim = 900, quality = 0.72){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim){
+        if (width >= height){ height = height*maxDim/width; width = maxDim; }
+        else { width = width*maxDim/height; height = maxDim; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(width);
+      canvas.height = Math.round(height);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+ 
+/* ==================================================================
+   若尚未設定 Firebase:顯示提示,停用社群互動
+   ================================================================== */
+if (!CONFIG_READY){
+  const notice = $('commSetupNotice');
+  window.__loadCommunity = () => {
+    if (notice) notice.style.display = 'block';
+    $('commContent').style.display = 'none';
+  };
+  $('loginBtn').addEventListener('click', () => {
+    alert('社群功能需要先設定 Firebase(見檔案底部說明)。');
+  });
+} else {
+  const app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+  initAuthUI();
+  initShare();
+  initCommunity();
+  initDetailModal();
+ 
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
+    if (user){
+      // 確保 users 文件存在,載入收藏
+      const uref = doc(db, 'users', user.uid);
+      const snap = await getDoc(uref);
+      if (!snap.exists()){
+        await setDoc(uref, {
+          displayName: user.displayName || (user.email || '').split('@')[0],
+          email: user.email || '',
+          savedPlans: [],
+          createdAt: serverTimestamp()
+        });
+        userSaved = new Set();
+        userHidden = new Set();
+      } else {
+        userSaved = new Set(snap.data().savedPlans || []);
+        userHidden = new Set(snap.data().hiddenPlans || []);
+      }
+    } else {
+      userSaved = new Set();
+      userHidden = new Set();
+    }
+    renderAccountBar();
+    refreshShareButton();
+    if ($('communityView').classList.contains('active')) renderTab();
+  });
+}
+ 
+/* ---------- 帳號列 ---------- */
+function renderAccountBar(){
+  const bar = $('accountBar');
+  if (currentUser){
+    const name = currentUser.displayName || (currentUser.email || '').split('@')[0];
+    bar.innerHTML =
+      '<div class="who"><span class="avatar">' + esc(initials(name)) + '</span>' +
+      '嗨,<b>' + esc(name) + '</b></div>' +
+      '<button class="btn-mini ghost" id="logoutBtn">登出</button>';
+    $('logoutBtn').addEventListener('click', () => signOut(auth));
+  } else {
+    bar.innerHTML = '<button class="btn-mini" id="loginBtn">登入 / 註冊</button>';
+    $('loginBtn').addEventListener('click', openAuth);
+  }
+}
+ 
+/* ---------- 登入 / 註冊 Modal ---------- */
+let authMode = 'login';
+function openAuth(){ $('authScrim').classList.add('active'); setAuthMode('login'); }
+function closeAuth(){ $('authScrim').classList.remove('active'); $('authErr').classList.remove('active'); }
+function setAuthMode(mode){
+  authMode = mode;
+  const isReg = mode === 'register';
+  $('tabLogin').classList.toggle('active', !isReg);
+  $('tabRegister').classList.toggle('active', isReg);
+  $('nameField').style.display = isReg ? 'block' : 'none';
+  $('authTitle').textContent = isReg ? '註冊' : '登入';
+  $('authSubmit').textContent = isReg ? '建立帳號' : '登入';
+  $('authErr').classList.remove('active');
+}
+function initAuthUI(){
+  $('loginBtn').addEventListener('click', openAuth);
+  $('authClose').addEventListener('click', closeAuth);
+  $('authScrim').addEventListener('click', e => { if (e.target === $('authScrim')) closeAuth(); });
+  $('tabLogin').addEventListener('click', () => setAuthMode('login'));
+  $('tabRegister').addEventListener('click', () => setAuthMode('register'));
+  $('authSubmit').addEventListener('click', submitAuth);
+  $('authPass').addEventListener('keydown', e => { if (e.key === 'Enter') submitAuth(); });
+  $('googleSignInBtn').addEventListener('click', submitGoogleAuth);
+}
+async function submitGoogleAuth(){
+  const errEl = $('authErr');
+  errEl.classList.remove('active');
+  const btn = $('googleSignInBtn');
+  btn.disabled = true;
+  try{
+    const provider = new GoogleAuthProvider();
+    const cred = await signInWithPopup(auth, provider);
+    const uref = doc(db, 'users', cred.user.uid);
+    const snap = await getDoc(uref);
+    if (!snap.exists()){
+      await setDoc(uref, {
+        displayName: cred.user.displayName || (cred.user.email || '').split('@')[0],
+        email: cred.user.email || '',
+        savedPlans: [],
+        createdAt: serverTimestamp()
+      });
+    }
+    closeAuth();
+  }catch(err){
+    if (err.code === 'auth/popup-closed-by-user') { btn.disabled = false; return; }
+    showAuthErr(friendlyAuthError(err));
+  }finally{
+    btn.disabled = false;
+  }
+}
+async function submitAuth(){
+  const email = $('authEmail').value.trim();
+  const pass = $('authPass').value;
+  const name = $('authName').value.trim();
+  const errEl = $('authErr');
+  errEl.classList.remove('active');
+ 
+  if (!email || !pass){ showAuthErr('請填寫電子郵件與密碼。'); return; }
+  if (authMode === 'register' && !name){ showAuthErr('請填寫暱稱。'); return; }
+ 
+  $('authSubmit').disabled = true;
+  try{
+    if (authMode === 'register'){
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      await updateProfile(cred.user, { displayName: name });
+      await setDoc(doc(db, 'users', cred.user.uid), {
+        displayName: name, email, savedPlans: [], createdAt: serverTimestamp()
+      });
+    } else {
+      await signInWithEmailAndPassword(auth, email, pass);
+    }
+    closeAuth();
+    $('authEmail').value = ''; $('authPass').value = ''; $('authName').value = '';
+  }catch(err){
+    showAuthErr(friendlyAuthError(err));
+  }finally{
+    $('authSubmit').disabled = false;
+  }
+}
+function showAuthErr(msg){ const e = $('authErr'); e.textContent = msg; e.classList.add('active'); }
+function friendlyAuthError(err){
+  const c = err.code || '';
+  if (c.includes('email-already-in-use')) return '這個電子郵件已經註冊過了,請直接登入。';
+  if (c.includes('invalid-email')) return '電子郵件格式不正確。';
+  if (c.includes('weak-password')) return '密碼太短,請至少 6 個字元。';
+  if (c.includes('invalid-credential') || c.includes('wrong-password') || c.includes('user-not-found'))
+    return '帳號或密碼不正確。';
+  if (c.includes('too-many-requests')) return '嘗試次數過多,請稍後再試。';
+  return '發生錯誤:' + (err.message || c);
+}
+ 
+/* ---------- 分享到社群 ---------- */
+function initShare(){
+  $('sharePlanBtn').addEventListener('click', sharePlan);
+  window.__onPlanReady = refreshShareButton;
+}
+function refreshShareButton(){
+  const row = $('shareRow');
+  const hasPlan = !!window.__currentPlan;
+  row.classList.toggle('active', hasPlan);
+  if (!hasPlan) return;
+  const btn = $('sharePlanBtn');
+  const hint = $('shareHint');
+  hint.classList.remove('ok');
+  if (!currentUser){
+    btn.textContent = '登入後即可分享到社群';
+    hint.textContent = '分享後其他使用者可以在「社群」看到、按讚與收藏。';
+  } else {
+    btn.textContent = '分享到社群公開牆';
+    hint.textContent = '以「' + (currentUser.displayName || '你') + '」的身分分享。';
+  }
+}
+async function sharePlan(){
+  if (!currentUser){ openAuth(); return; }
+  const plan = window.__currentPlan;
+  if (!plan){ return; }
+ 
+  const btn = $('sharePlanBtn');
+  const hint = $('shareHint');
+  btn.disabled = true; btn.textContent = '分享中⋯⋯';
+  try{
+    const thumb = await compressImage(plan.imageSrc);
+    await addDoc(collection(db, 'plans'), {
+      uid: currentUser.uid,
+      authorName: currentUser.displayName || (currentUser.email || '').split('@')[0],
+      requirement: plan.requirement || '',
+      summary: plan.summary || '',
+      items: plan.items || [],
+      steps: plan.steps || [],
+      thumb,
+      likeCount: 0,
+      likedBy: [],
+      createdAt: serverTimestamp()
+    });
+    hint.textContent = '已分享!前往「社群」查看。';
+    hint.classList.add('ok');
+    btn.textContent = '已分享 ✓';
+    // 讓下次進社群會重新抓
+    allPlans = [];
+    setTimeout(() => { btn.disabled = false; refreshShareButton(); }, 2500);
+  }catch(err){
+    console.error(err);
+    hint.textContent = '分享失敗:' + (err.message || err);
+    btn.disabled = false; btn.textContent = '分享到社群公開牆';
+  }
+}
+ 
+/* ---------- 社群載入與渲染 ---------- */
+function initCommunity(){
+  window.__loadCommunity = loadCommunity;
+  $('commTabs').addEventListener('click', e => {
+    const b = e.target.closest('.comm-tab');
+    if (!b) return;
+    document.querySelectorAll('.comm-tab').forEach(t => t.classList.toggle('active', t === b));
+    activeTab = b.dataset.tab;
+    renderTab();
+  });
+  $('commRefreshBtn').addEventListener('click', () => loadCommunity(true));
+}
+async function loadCommunity(force){
+  $('commSetupNotice').style.display = 'none';
+  $('commContent').style.display = 'block';
+  if (allPlans.length && !force){ renderTab(); return; }
+ 
+  $('commLoading').classList.add('active');
+  $('planGrid').innerHTML = '';
+  $('commEmpty').style.display = 'none';
+  $('commFeatured').innerHTML = '';
+  try{
+    const q = query(collection(db, 'plans'), orderBy('createdAt', 'desc'), limit(80));
+    const snap = await getDocs(q);
+    allPlans = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }catch(err){
+    console.error(err);
+    $('commLoading').classList.remove('active');
+    $('planGrid').innerHTML = '<div class="setup-notice">載入失敗:' + esc(err.message || '') +
+      '<br>請確認 Firestore 已建立、規則已發布。</div>';
+    return;
+  }
+  $('commLoading').classList.remove('active');
+  renderTab();
+}
+function renderTab(){
+  const grid = $('planGrid');
+  const featured = $('commFeatured');
+  const empty = $('commEmpty');
+  featured.innerHTML = '';
+  grid.innerHTML = '';
+  empty.style.display = 'none';
+ 
+  let list = allPlans.filter(p => !userHidden.has(p.id));
+  if (activeTab === 'top'){
+    list.sort((a,b) => (b.likeCount||0) - (a.likeCount||0));
+  } else if (activeTab === 'week'){
+    list = list.filter(p => withinWeek(p.createdAt))
+               .sort((a,b) => (b.likeCount||0) - (a.likeCount||0));
+    if (list.length){
+      renderFeatured(list[0]);
+      list = list.slice(1);
+    }
+  } else if (activeTab === 'saved'){
+    if (!currentUser){
+      empty.style.display = 'block';
+      $('commEmptyText').innerHTML = '登入後,你收藏的整理計畫會出現在這裡。';
+      return;
+    }
+    list = list.filter(p => userSaved.has(p.id));
+  } else if (activeTab === 'hidden'){
+    if (!currentUser){
+      empty.style.display = 'block';
+      $('commEmptyText').innerHTML = '登入後,你隱藏的貼文會出現在這裡,可以隨時恢復顯示。';
+      return;
+    }
+    list = allPlans.filter(p => userHidden.has(p.id));
+  }
+ 
+  if (!list.length && !featured.innerHTML){
+    empty.style.display = 'block';
+    $('commEmptyText').innerHTML = activeTab === 'saved'
+      ? '你還沒有收藏任何計畫。<br>在計畫卡片上點星星即可收藏。'
+      : activeTab === 'hidden'
+      ? '你沒有隱藏任何貼文。<br>在別人的貼文上點眼睛圖示即可隱藏。'
+      : '還沒有人分享整理計畫。<br>到「手動上傳」生成一份,再按「分享到社群」吧。';
+    return;
+  }
+ 
+  list.forEach((p, i) => grid.appendChild(planCard(p, activeTab === 'top' ? i+1 : null, activeTab === 'hidden')));
+}
+function renderFeatured(p){
+  const el = document.createElement('div');
+  el.className = 'featured-banner';
+  el.innerHTML =
+    '<img class="fb-img" src="' + esc(p.thumb) + '" alt="精選整理計畫">' +
+    '<div class="fb-body">' +
+      '<p class="fb-tag">★ 本週精選 · 最多讚</p>' +
+      '<h3>' + esc(p.summary || '整理計畫') + '</h3>' +
+      '<div class="fb-meta">' + esc(p.authorName || '匿名') + ' · ' +
+        (p.likeCount||0) + ' 個讚 · ' + timeAgo(p.createdAt) + '</div>' +
+    '</div>';
+  el.querySelector('.fb-img').addEventListener('click', () => openDetail(p));
+  el.querySelector('h3').addEventListener('click', () => openDetail(p));
+  $('commFeatured').appendChild(el);
+}
+function planCard(p, rank, inHiddenTab){
+  const card = document.createElement('div');
+  card.className = 'plan-card';
+  const liked = currentUser && (p.likedBy || []).includes(currentUser.uid);
+  const saved = userSaved.has(p.id);
+  const isOwner = currentUser && p.uid === currentUser.uid;
+ 
+  card.innerHTML =
+    '<img class="pc-img" src="' + esc(p.thumb) + '" alt="整理計畫縮圖">' +
+    '<div class="pc-body">' +
+      (rank ? '<div class="pc-rank">排行榜 #' + rank + '</div>' : '') +
+      '<p class="pc-summary">' + esc(p.summary || '整理計畫') + '</p>' +
+      '<div class="pc-meta">' +
+        '<div class="pc-author"><span class="avatar">' + esc(initials(p.authorName)) + '</span>' +
+          '<span>' + esc(p.authorName || '匿名') + '</span></div>' +
+        '<button class="icon-btn like ' + (liked?'liked':'') + '" title="按讚">' +
+          '<svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>' +
+          '<span class="lc">' + (p.likeCount||0) + '</span></button>' +
+        '<button class="icon-btn save ' + (saved?'saved':'') + '" title="收藏">' +
+          '<svg viewBox="0 0 24 24"><path d="M12 17.3 6.2 21l1.6-6.6L3 9.7l6.7-.6L12 3l2.3 6.1 6.7.6-4.8 4.7L17.8 21z"/></svg></button>' +
+        (inHiddenTab
+          ? '<button class="icon-btn unhide" title="恢復顯示這篇貼文">' +
+              '<svg viewBox="0 0 24 24"><path d="M2 12c1.4-3.8 5-7.3 10-7.3s8.6 3.5 10 7.3c-1.4 3.8-5 7.3-10 7.3S3.4 15.8 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>'
+          : (isOwner
+              ? '<button class="icon-btn del" title="刪除這篇貼文">' +
+                  '<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13M9 7V4h6v3"/></svg></button>'
+              : (currentUser
+                  ? '<button class="icon-btn hide" title="隱藏這篇貼文(只影響你自己)">' +
+                      '<svg viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.2 4.2M9.9 4.9A9.8 9.8 0 0 1 12 4.7c5 0 8.6 3.5 10 7.3a12.6 12.6 0 0 1-3 4.3M6.1 6.5A12.4 12.4 0 0 0 2 12c1.4 3.8 5 7.3 10 7.3 1.3 0 2.5-.2 3.6-.6"/></svg></button>'
+                  : ''))) +
+      '</div>' +
+    '</div>';
+ 
+  card.querySelector('.pc-img').addEventListener('click', () => openDetail(p));
+  card.querySelector('.pc-summary').addEventListener('click', () => openDetail(p));
+  card.querySelector('.like').addEventListener('click', () => toggleLike(p, card));
+  card.querySelector('.save').addEventListener('click', () => toggleSave(p, card));
+  const delBtn = card.querySelector('.del');
+  if (delBtn) delBtn.addEventListener('click', () => deletePlan(p));
+  const hideBtn = card.querySelector('.hide');
+  if (hideBtn) hideBtn.addEventListener('click', () => hidePlan(p));
+  const unhideBtn = card.querySelector('.unhide');
+  if (unhideBtn) unhideBtn.addEventListener('click', () => unhidePlan(p));
+  return card;
+}
+ 
+/* ---------- 刪除自己的貼文 ---------- */
+async function deletePlan(p){
+  if (!currentUser || p.uid !== currentUser.uid) return;
+  if (!confirm('確定要刪除這篇貼文嗎?刪除後無法復原。')) return;
+  try{
+    await deleteDoc(doc(db, 'plans', p.id));
+    allPlans = allPlans.filter(x => x.id !== p.id);
+    renderTab();
+  }catch(err){
+    console.error('刪除失敗', err);
+    alert('刪除失敗:' + (err.message || err));
+  }
+}
+ 
+/* ---------- 隱藏別人的貼文(只影響自己) ---------- */
+async function hidePlan(p){
+  if (!currentUser){ openAuth(); return; }
+  userHidden.add(p.id);
+  renderTab();
+  try{
+    await updateDoc(doc(db, 'users', currentUser.uid), {
+      hiddenPlans: arrayUnion(p.id)
+    });
+  }catch(err){
+    console.error('隱藏失敗', err);
+  }
+}
+ 
+/* ---------- 恢復顯示已隱藏的貼文 ---------- */
+async function unhidePlan(p){
+  if (!currentUser) return;
+  userHidden.delete(p.id);
+  renderTab();
+  try{
+    await updateDoc(doc(db, 'users', currentUser.uid), {
+      hiddenPlans: arrayRemove(p.id)
+    });
+  }catch(err){
+    console.error('恢復顯示失敗', err);
+  }
+}
+ 
+async function toggleLike(p, card){
+  if (!currentUser){ openAuth(); return; }
+  const btn = card.querySelector('.like');
+  const liked = (p.likedBy || []).includes(currentUser.uid);
+  const ref = doc(db, 'plans', p.id);
+  // 樂觀更新
+  p.likedBy = p.likedBy || [];
+  if (liked){
+    p.likedBy = p.likedBy.filter(u => u !== currentUser.uid);
+    p.likeCount = Math.max(0, (p.likeCount||1) - 1);
+  } else {
+    p.likedBy.push(currentUser.uid);
+    p.likeCount = (p.likeCount||0) + 1;
+  }
+  btn.classList.toggle('liked', !liked);
+  btn.querySelector('.lc').textContent = p.likeCount;
+  try{
+    await updateDoc(ref, liked
+      ? { likedBy: arrayRemove(currentUser.uid), likeCount: increment(-1) }
+      : { likedBy: arrayUnion(currentUser.uid),  likeCount: increment(1) });
+  }catch(err){ console.error('按讚失敗', err); }
+}
+ 
+async function toggleSave(p, card){
+  if (!currentUser){ openAuth(); return; }
+  const btn = card.querySelector('.save');
+  const saved = userSaved.has(p.id);
+  const ref = doc(db, 'users', currentUser.uid);
+  if (saved){ userSaved.delete(p.id); } else { userSaved.add(p.id); }
+  btn.classList.toggle('saved', !saved);
+  try{
+    await updateDoc(ref, saved
+      ? { savedPlans: arrayRemove(p.id) }
+      : { savedPlans: arrayUnion(p.id) });
+  }catch(err){ console.error('收藏失敗', err); }
+  if (activeTab === 'saved') renderTab();
+}
+ 
+/* ---------- 詳細 Modal(重建標註圖) ---------- */
+function initDetailModal(){
+  $('detailClose').addEventListener('click', closeDetail);
+  $('detailScrim').addEventListener('click', e => { if (e.target === $('detailScrim')) closeDetail(); });
+}
+function closeDetail(){ $('detailScrim').classList.remove('active'); }
+function openDetail(p){
+  $('detailAuthor').textContent = p.authorName || '匿名';
+  $('detailImg').src = p.thumb;
+  $('detailSummary').textContent = p.summary || '';
+ 
+  const reqEl = $('detailReq');
+  if (p.requirement){
+    reqEl.style.display = 'block';
+    reqEl.innerHTML = '<b>整理需求:</b>' + esc(p.requirement);
+  } else { reqEl.style.display = 'none'; }
+ 
+  const annot = $('detailAnnot');
+  annot.querySelectorAll('.pin').forEach(el => el.remove());
+  const items = $('detailItems');
+  items.innerHTML = '';
+ 
+  (p.items || []).forEach((it, i) => {
+    const num = i + 1;
+    const pin = document.createElement('div');
+    pin.className = 'pin';
+    pin.style.left = Math.max(3, Math.min(97, it.x)) + '%';
+    pin.style.top = Math.max(3, Math.min(97, it.y)) + '%';
+    pin.textContent = num;
+    annot.appendChild(pin);
+ 
+    const cat = it.category || 'keep';
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.innerHTML =
+      '<div class="item-num">' + num + '</div><div>' +
+      '<div class="item-title-row"><span class="item-title">' + esc(it.title) + '</span>' +
+      '<span class="tag ' + cat + '">' + (catLabel[cat] || cat) + '</span></div>' +
+      '<p class="item-detail">' + esc(it.detail) + '</p></div>';
+    items.appendChild(card);
+ 
+    const hl = () => {
+      annot.querySelectorAll('.pin').forEach(x => x.classList.remove('active-pin'));
+      items.querySelectorAll('.item-card').forEach(x => x.classList.remove('active-card'));
+      pin.classList.add('active-pin'); card.classList.add('active-card');
+    };
+    pin.addEventListener('click', hl);
+    card.addEventListener('click', hl);
+  });
+ 
+  const steps = $('detailSteps');
+  steps.innerHTML = '';
+  (p.steps || []).forEach(s => {
+    const li = document.createElement('li');
+    li.textContent = s;
+    steps.appendChild(li);
+  });
+ 
+  $('detailScrim').classList.add('active');
+}
+</script>
+</body>
+</html>
